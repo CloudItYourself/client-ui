@@ -23,31 +23,18 @@ class CiyInstaller {
     if (Platform.isWindows) {
         final request = await HttpClient().getUrl(Uri.parse(qemuDownloadUrl));
         final response = await request.close();
-        response.pipe(File('$temporaryDirectoryPath/qemu-installer.exe').openWrite());
-        var result = await Process.run("runas", ["$temporaryDirectoryPath/qemu-installer.exe", "/S"], runInShell: true);
-        if (result.exitCode != 0) {
-          return false;
-        }
+        Stream<List<int>> inputStream = response;
+        RandomAccessFile outputFile = await File('$temporaryDirectoryPath/qemu-installer.exe').open(mode: FileMode.write);
+        await inputStream.listen((data) {
+          outputFile.writeFromSync(data);
+        }).asFuture();
 
-        var qemuFinishedInstalling = false;
-        var qemuFoundOnce = false;
-        for (var i = 0; i < qemuInstallTimeoutInSeconds / 10 ; ++i) {
-          sleep(Duration(seconds:  10)); // Sleep for  10 seconds
-          Process process = await Process.start('tasklist', qemuInstallationProcessTask);
-          String output = '';
-            await for (var data in process.stdout) {
-            output += utf8.decode(data);
-          }
-          if (output.contains("qemu")) {
-            qemuFoundOnce = true;
-          }
-          else if(qemuFoundOnce) {
-              qemuFinishedInstalling = true;
-              break;
-          }
-        }
-        return qemuFinishedInstalling;
+        // Close the file after writing
+        await outputFile.close();
 
+        var result = await Process.run("$temporaryDirectoryPath/qemu-installer.exe", ["/S"], runInShell: true);
+        await File('$temporaryDirectoryPath/qemu-installer.exe').delete();
+        return result.exitCode == 0;
     }
     return true;   
   }
