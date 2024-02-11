@@ -24,7 +24,7 @@ class CiyInstaller {
         final request = await HttpClient().getUrl(Uri.parse(qemuDownloadUrl));
         final response = await request.close();
         Stream<List<int>> inputStream = response;
-        RandomAccessFile outputFile = await File('$temporaryDirectoryPath/qemu-installer.exe').open(mode: FileMode.write);
+        RandomAccessFile outputFile = await File('$temporaryDirectoryPath/ciy-vm-runner.exe').open(mode: FileMode.write);
         await inputStream.listen((data) {
           outputFile.writeFromSync(data);
         }).asFuture();
@@ -32,8 +32,8 @@ class CiyInstaller {
         // Close the file after writing
         await outputFile.close();
 
-        var result = await Process.run("$temporaryDirectoryPath/qemu-installer.exe", ["/S"], runInShell: true);
-        await File('$temporaryDirectoryPath/qemu-installer.exe').delete();
+        var result = await Process.run("$temporaryDirectoryPath/ciy-vm-runner.exe", ["/S"], runInShell: true);
+        await File('$temporaryDirectoryPath/ciy-vm-runner.exe').delete();
         return result.exitCode == 0;
     }
     return true;   
