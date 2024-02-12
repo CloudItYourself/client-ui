@@ -7,16 +7,29 @@ import 'package:ciy_client/utilities/divisions_slider.dart';
 class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context); // ← Add this.
+    var cpu = CPUSlider();
+    var ram = RAMSlider();
+    final theme = Theme.of(context);
+
     return Card(
       color: theme.colorScheme.inversePrimary,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            CPUSlider(),
-            RAMSlider(),
-          ],
+            cpu,
+            ram,
+            ElevatedButton(
+            onPressed: () {
+              VMCharacteristics().saveParameters();
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [Icon(Icons.check),
+              Text('Save'),]
+            )
+          )],
         ),
       ),
     );
@@ -29,7 +42,7 @@ class CPUSlider extends StatefulWidget {
 }
 
 class _CPUSliderState extends State<CPUSlider> {
-  final String header = "VM Core count";
+  final String header = "Cores";
   int? minCores;
   int? maxCores;
   SpecificDivisionsSlider? slider;
@@ -38,11 +51,13 @@ class _CPUSliderState extends State<CPUSlider> {
   _CPUSliderState() {
     maxCores = VMCharacteristics().maxCores;
     minCores = min(2, Platform.numberOfProcessors);
-    slider = SpecificDivisionsSlider(header, minCores!, maxCores!, increment, notifiable: updateCPU);
+    slider = SpecificDivisionsSlider(header, minCores!, maxCores!, increment, notifiable: updateCPU, initialValue: VMCharacteristics().vmCores);
   }
+
   void updateCPU(int value) {
-    VMCharacteristics().vmCores = value;
+    VMCharacteristics().tempCores = value;
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +72,7 @@ class RAMSlider extends StatefulWidget {
 }
 
 class _RAMSliderState extends State<RAMSlider> {
-  final String header = "VM Memory (GB)";
+  final String header = "Memory(GB)";
   int? minRam;
   int? maxRam;
   SpecificDivisionsSlider? slider;
@@ -66,12 +81,14 @@ class _RAMSliderState extends State<RAMSlider> {
   _RAMSliderState() {
     maxRam = VMCharacteristics().maxRam;
     minRam = min(2, maxRam!);
-    slider = SpecificDivisionsSlider(header, minRam!, maxRam!, increment, notifiable: updateMemory);
+    slider = SpecificDivisionsSlider(header, minRam!, maxRam!, increment, notifiable: updateMemory, initialValue: VMCharacteristics().vmRam);
+
   }
 
   void updateMemory(int value) {
-    VMCharacteristics().vmRam = value;
+    VMCharacteristics().tempRam = value;
   }
+
   @override
   Widget build(BuildContext context) {
     return slider!;

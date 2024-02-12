@@ -6,7 +6,8 @@ class SpecificDivisionsSlider extends StatefulWidget {
   final int max;
   final int step;
   final Function(int value)? notifiable;
-  SpecificDivisionsSlider(this.sliderHeader, this.min, this.max, this.step, {this.notifiable});
+  final int? initialValue;
+  SpecificDivisionsSlider(this.sliderHeader, this.min, this.max, this.step, {this.notifiable, this.initialValue});
 
   @override
   _SpecificDivisionsSliderState createState() =>
@@ -14,7 +15,7 @@ class SpecificDivisionsSlider extends StatefulWidget {
 }
 
 class _SpecificDivisionsSliderState extends State<SpecificDivisionsSlider>  {
-  int _sliderValue = 0;
+  int _sliderValue = -1;
   
   int _mapValueToCustomDivision(int value) {
     List<int> customDivisions = List<int>.generate(
@@ -37,6 +38,11 @@ class _SpecificDivisionsSliderState extends State<SpecificDivisionsSlider>  {
 
   @override
   Widget build(BuildContext context) {
+    if (_sliderValue == -1) {
+      if (widget.initialValue != null) {
+        _sliderValue = widget.initialValue!;
+      }
+    }
     if (_sliderValue < widget.min) {
         _sliderValue = widget.min;
     }
