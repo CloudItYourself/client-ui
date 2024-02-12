@@ -5,15 +5,15 @@ class SpecificDivisionsSlider extends StatefulWidget {
   final int min;
   final int max;
   final int step;
-
-  SpecificDivisionsSlider(this.sliderHeader, this.min, this.max, this.step);
+  final Function(int value)? notifiable;
+  SpecificDivisionsSlider(this.sliderHeader, this.min, this.max, this.step, {this.notifiable});
 
   @override
   _SpecificDivisionsSliderState createState() =>
       _SpecificDivisionsSliderState();
 }
 
-class _SpecificDivisionsSliderState extends State<SpecificDivisionsSlider> {
+class _SpecificDivisionsSliderState extends State<SpecificDivisionsSlider>  {
   int _sliderValue = 0;
   
   int _mapValueToCustomDivision(int value) {
@@ -53,6 +53,9 @@ class _SpecificDivisionsSliderState extends State<SpecificDivisionsSlider> {
           onChanged: (double value) {
             setState(() {
               _sliderValue = value.toInt();
+              if (widget.notifiable != null) {
+                widget.notifiable!.call(_sliderValue);
+              }
             });
           },
         ),

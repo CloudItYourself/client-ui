@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:ciy_client/globals/vm_characteristics.dart';
 import 'package:flutter/material.dart';
 import 'package:ciy_client/utilities/divisions_slider.dart';
-import 'package:system_info/system_info.dart';
 
 class SettingsPage extends StatelessWidget {
   @override
@@ -36,9 +36,12 @@ class _CPUSliderState extends State<CPUSlider> {
   final int increment = 1;
 
   _CPUSliderState() {
-    maxCores = Platform.numberOfProcessors;
+    maxCores = VMCharacteristics().maxCores;
     minCores = min(2, Platform.numberOfProcessors);
-    slider = SpecificDivisionsSlider(header, minCores!, maxCores!, increment);
+    slider = SpecificDivisionsSlider(header, minCores!, maxCores!, increment, notifiable: updateCPU);
+  }
+  void updateCPU(int value) {
+    VMCharacteristics().vmCores = value;
   }
 
   @override
@@ -61,11 +64,14 @@ class _RAMSliderState extends State<RAMSlider> {
   final int increment = 1;
 
   _RAMSliderState() {
-    maxRam = (SysInfo.getTotalPhysicalMemory() / pow(2,30)).ceil();
+    maxRam = VMCharacteristics().maxRam;
     minRam = min(2, maxRam!);
-    slider = SpecificDivisionsSlider(header, minRam!, maxRam!, increment);
+    slider = SpecificDivisionsSlider(header, minRam!, maxRam!, increment, notifiable: updateMemory);
   }
 
+  void updateMemory(int value) {
+    VMCharacteristics().vmRam = value;
+  }
   @override
   Widget build(BuildContext context) {
     return slider!;

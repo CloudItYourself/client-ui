@@ -1,4 +1,5 @@
 import 'dart:isolate';
+import 'package:ciy_client/globals/vm_characteristics.dart';
 import 'package:ciy_client/pages/settings/settings.dart';
 import 'package:ciy_client/utilities/installer.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
 
+
+  VMCharacteristics();
+  
   WindowOptions windowOptions = const WindowOptions(
     size: Size(600, 400),
     center: true,
