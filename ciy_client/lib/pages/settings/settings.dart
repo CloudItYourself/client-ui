@@ -1,61 +1,73 @@
-
+import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:ciy_client/utilities/divisions_slider.dart';
+import 'package:system_info/system_info.dart';
 
 class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              SpecificDivisionsSlider("XD"),
-              SpecificDivisionsSlider("XP"),
-              SpecificDivisionsSlider("WTF"),
-            ],
-          ),
+    final theme = Theme.of(context); // ← Add this.
+    return Card(
+      color: theme.colorScheme.inversePrimary,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            CPUSlider(),
+            RAMSlider(),
+          ],
+        ),
+      ),
     );
   }
 }
 
-class SpecificDivisionsSlider extends StatefulWidget {
-  final String sliderHeader;
-  SpecificDivisionsSlider(this.sliderHeader);
-
+class CPUSlider extends StatefulWidget {
   @override
-  _SpecificDivisionsSliderState createState() => _SpecificDivisionsSliderState();
+  State<CPUSlider> createState() => _CPUSliderState();
 }
 
-class _SpecificDivisionsSliderState extends State<SpecificDivisionsSlider> {
-  double _sliderValue =  0;
-  List<double> _customDivisions = [0.5,  1,  2,  3,  4,  5,  10,  15];
+class _CPUSliderState extends State<CPUSlider> {
+  final String header = "VM Core count";
+  int? minCores;
+  int? maxCores;
+  SpecificDivisionsSlider? slider;
+  final int increment = 1;
 
-  double _mapValueToCustomDivision(double value) {
-    int index = _customDivisions.indexWhere((element) => element >= value);
-    if (index == -1) {
-      return _customDivisions.last;
-    } else {
-      return _customDivisions[index];
-    }
+  _CPUSliderState() {
+    maxCores = Platform.numberOfProcessors;
+    minCores = min(2, Platform.numberOfProcessors);
+    slider = SpecificDivisionsSlider(header, minCores!, maxCores!, increment);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Text('${widget.sliderHeader}: ${_mapValueToCustomDivision(_sliderValue)}'),
-        Slider(
-          value: _sliderValue,
-          min:  0,
-          max:  15,
-          divisions:  15, // Total number of divisions including custom ones
-          label: _mapValueToCustomDivision(_sliderValue).toString(),
-          onChanged: (double value) {
-            setState(() {
-              _sliderValue = value;
-            });
-          },
-        ),
-      ],
-    );
+    return slider!;
+  }
+}
+
+
+class RAMSlider extends StatefulWidget {
+  @override
+  State<RAMSlider> createState() => _RAMSliderState();
+}
+
+class _RAMSliderState extends State<RAMSlider> {
+  final String header = "VM Memory (GB)";
+  int? minRam;
+  int? maxRam;
+  SpecificDivisionsSlider? slider;
+  final int increment = 1;
+
+  _RAMSliderState() {
+    maxRam = (SysInfo.getTotalPhysicalMemory() / pow(2,30)).ceil();
+    minRam = min(2, maxRam!);
+    slider = SpecificDivisionsSlider(header, minRam!, maxRam!, increment);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return slider!;
   }
 }

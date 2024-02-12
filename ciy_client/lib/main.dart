@@ -35,7 +35,7 @@ class CloudIY extends StatelessWidget {
       theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(
-              seedColor: Colors.deepPurple, brightness: Brightness.dark)),
+              seedColor: Colors.blue, brightness: Brightness.dark)),
       home: CloudIYHome(),
     );
   }
@@ -66,6 +66,8 @@ class _CloudIYHomeState extends State<CloudIYHome> {
       case 1:
         page = SettingsPage();
         break;
+      case 2:
+        page = Placeholder();
       default:
         throw UnimplementedError('no widget for $selectedIndex');
     }
@@ -84,6 +86,10 @@ class _CloudIYHomeState extends State<CloudIYHome> {
                   ),
                   NavigationRailDestination(
                     icon: Icon(Icons.settings),
+                    label: Text('Settings'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.check_circle),
                     label: Text('Settings'),
                   ),
                 ],
