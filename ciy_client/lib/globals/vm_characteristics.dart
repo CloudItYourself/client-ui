@@ -14,6 +14,8 @@ class VMCharacteristics {
 
   int? tempCores;
   int? tempRam;
+
+
   factory VMCharacteristics() {
     return _singleton;
   }
@@ -29,8 +31,12 @@ class VMCharacteristics {
 
   void saveParameters() {
     SharedPreferences.getInstance().then((value) async {
-      await value.setInt("VmCores", tempCores!);
-      await value.setInt("VmRam", tempRam!);
+      if (tempCores != null) {
+        await value.setInt("VmCores", tempCores!);
+      }
+      if (tempRam != null) {
+        await value.setInt("VmRam", tempRam!);
+      }
     });
     vmCores = tempCores;
     vmRam = tempRam;

@@ -1,5 +1,6 @@
 import 'dart:isolate';
 import 'package:ciy_client/globals/vm_characteristics.dart';
+import 'package:ciy_client/pages/settings/installation_status.dart';
 import 'package:ciy_client/pages/settings/settings.dart';
 import 'package:ciy_client/utilities/installer.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,7 @@ void main() async {
   VMCharacteristics();
 
   WindowOptions windowOptions = const WindowOptions(
-    size: Size(600, 400),
+    size: Size(800, 400),
     center: true,
     backgroundColor: Colors.transparent,
     skipTaskbar: false,
@@ -39,7 +40,7 @@ class CloudIY extends StatelessWidget {
       theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(
-              seedColor: Colors.blue, brightness: Brightness.light)),
+              seedColor: Color.fromARGB(255, 166, 207, 241), brightness: Brightness.light)),
       home: CloudIYHome(),
     );
   }
@@ -71,7 +72,7 @@ class _CloudIYHomeState extends State<CloudIYHome> {
         page = SettingsPage();
         break;
       case 2:
-        page = Placeholder();
+        page = InstallationStatusPage();
       default:
         throw UnimplementedError('no widget for $selectedIndex');
     }
