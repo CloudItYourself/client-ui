@@ -1,10 +1,6 @@
-import 'dart:isolate';
 import 'package:ciy_client/globals/vm_characteristics.dart';
-import 'package:ciy_client/pages/settings/installation_status.dart';
-import 'package:ciy_client/pages/settings/settings.dart';
-import 'package:ciy_client/utilities/installer.dart';
+import 'package:ciy_client/pages/settings/main_page/unified_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:window_manager/window_manager.dart';
 
 void main() async {
@@ -40,87 +36,8 @@ class CloudIY extends StatelessWidget {
       theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(
-              seedColor: Color.fromARGB(255, 166, 207, 241), brightness: Brightness.light)),
-      home: CloudIYHome(),
+              seedColor: Color.fromARGB(255, 166, 207, 241), brightness: Brightness.dark)),
+      home: UnifiedPage(),
     );
-  }
-}
-
-class CloudIYHome extends StatefulWidget {
-  @override
-  State<CloudIYHome> createState() => _CloudIYHomeState();
-}
-
-class _CloudIYHomeState extends State<CloudIYHome> {
-  var selectedIndex = 0;
-  Future<Isolate>? installationIsolate;
-
-  @override
-  void initState() {
-    installationIsolate =
-        Isolate.spawn(CiyInstaller.installCiyRequirements, [RootIsolateToken.instance!]);
-    super.initState();
-  }
-
-  Widget buildMenuWhenAllFilesAreInstalled(BuildContext context) {
-    Widget page;
-    switch (selectedIndex) {
-      case 0:
-        page = Placeholder();
-        break;
-      case 1:
-        page = SettingsPage();
-        break;
-      case 2:
-        page = InstallationStatusPage();
-      default:
-        throw UnimplementedError('no widget for $selectedIndex');
-    }
-    return Scaffold(
-      body: Row(
-        children: [
-          SafeArea(
-            child: SizedBox(
-              width: 80,
-              child: NavigationRail(
-                extended: false,
-                destinations: [
-                  NavigationRailDestination(
-                    icon: Icon(Icons.home),
-                    label: Text('Home'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.settings),
-                    label: Text('Settings'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.check_circle),
-                    label: Text('Settings'),
-                  ),
-                ],
-                selectedIndex: selectedIndex, // ← Change to this.
-                onDestinationSelected: (value) {
-                  // ↓ Replace print with this.
-                  setState(() {
-                    selectedIndex = value;
-                  });
-                },
-              ),
-            ),
-          ),
-          Expanded(
-            child: Container(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              child: page,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return buildMenuWhenAllFilesAreInstalled(context);
   }
 }
