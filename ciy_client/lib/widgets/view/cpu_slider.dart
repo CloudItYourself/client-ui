@@ -7,17 +7,14 @@ class CPUSliderWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => CPUValueBloc(),
-      child: Builder(builder: (context) {
-        return SpecificDivisionsSlider<CPUValueChangeEvent, CPUValueBloc>(
+        create: (_) => CPUValueBloc(),
+        child: SpecificDivisionsSlider<CPUValueChangeEvent, CPUValueBloc>(
             "Cores",
             context.select((CPUValueBloc bloc) => bloc.state.minCores!),
             context.select((CPUValueBloc bloc) => bloc.state.maxCores!),
             context.select((CPUValueBloc bloc) => bloc.state.increment!),
             CPUValueChangeEvent.new,
             context
-                .select((CPUValueBloc bloc) => bloc.state.currentCoreCount!));
-      }),
-    );
+                .select((CPUValueBloc bloc) => bloc.state.currentCoreCount!)));
   }
 }
