@@ -12,10 +12,6 @@ class VMCharacteristics {
   int? vmCores;
   int? vmRam;
 
-  int? tempCores;
-  int? tempRam;
-
-
   factory VMCharacteristics() {
     return _singleton;
   }
@@ -29,16 +25,17 @@ class VMCharacteristics {
     maxRam = (SysInfo.getTotalPhysicalMemory() / pow(2, 30)).ceil();
   }
 
-  void saveParameters() {
-    SharedPreferences.getInstance().then((value) async {
-      if (tempCores != null) {
-        await value.setInt("VmCores", tempCores!);
-      }
-      if (tempRam != null) {
-        await value.setInt("VmRam", tempRam!);
-      }
-    });
-    vmCores = tempCores;
-    vmRam = tempRam;
+  void updateCPU(int cpuCount) {
+      SharedPreferences.getInstance().then((value) async {
+        await value.setInt("VmCores", cpuCount);
+      });
+      vmCores = cpuCount;
+  }
+
+  void updateRAM(int ramCount) {
+      SharedPreferences.getInstance().then((value) async {
+        await value.setInt("VmRam", ramCount);
+      });
+      vmRam = ramCount;
   }
 }

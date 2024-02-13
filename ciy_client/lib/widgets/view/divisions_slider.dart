@@ -1,22 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class SpecificDivisionsSlider extends StatefulWidget {
+class SpecificDivisionsSlider<EventClass extends Object, BlocType extends Bloc>
+    extends StatefulWidget {
   final String sliderHeader;
   final int min;
   final int max;
   final int step;
-  final Function(int value)? notifiable;
+  final EventClass Function(int) creator;
   final int? initialValue;
-  SpecificDivisionsSlider(this.sliderHeader, this.min, this.max, this.step, {this.notifiable, this.initialValue});
+
+  SpecificDivisionsSlider(
+      this.sliderHeader, this.min, this.max, this.step, this.creator,
+      this.initialValue);
 
   @override
   _SpecificDivisionsSliderState createState() =>
-      _SpecificDivisionsSliderState();
+      _SpecificDivisionsSliderState<EventClass, BlocType>();
 }
 
-class _SpecificDivisionsSliderState extends State<SpecificDivisionsSlider>  {
-  int _sliderValue = -1;
+class _SpecificDivisionsSliderState<EventClass extends Object,
+    BlocType extends Bloc> extends State<SpecificDivisionsSlider> {
+
   
+  int _sliderValue = -1;
+
   int _mapValueToCustomDivision(int value) {
     List<int> customDivisions = List<int>.generate(
       ((widget.max - widget.min) / widget.step)
@@ -44,7 +52,7 @@ class _SpecificDivisionsSliderState extends State<SpecificDivisionsSlider>  {
       }
     }
     if (_sliderValue < widget.min) {
-        _sliderValue = widget.min;
+      _sliderValue = widget.min;
     }
     return Column(
       children: <Widget>[
@@ -54,14 +62,13 @@ class _SpecificDivisionsSliderState extends State<SpecificDivisionsSlider>  {
           value: _sliderValue.toDouble(),
           min: widget.min.toDouble(),
           max: widget.max.toDouble(),
-          divisions: ((widget.max -  widget.min) / widget.step).truncate(), // Total number of divisions including custom ones
+          divisions: ((widget.max - widget.min) / widget.step)
+              .truncate(), // Total number of divisions including custom ones
           label: _mapValueToCustomDivision(_sliderValue).toString(),
           onChanged: (double value) {
             setState(() {
               _sliderValue = value.toInt();
-              if (widget.notifiable != null) {
-                widget.notifiable!.call(_sliderValue);
-              }
+              BlocProvider.of<BlocType>(context).add(widget.creator(_sliderValue));
             });
           },
         ),
