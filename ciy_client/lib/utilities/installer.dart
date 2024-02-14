@@ -1,5 +1,7 @@
 import 'dart:isolate';
-
+import 'package:archive/archive.dart';
+import 'package:archive/archive_io.dart';
+import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
@@ -20,6 +22,8 @@ class CiyInstaller {
   static const String vmFileNameWindows = "ciy.qcow2";
   static const String qemuInstalledPathWindows =
       "C:\\Program Files\\qemu\\qemu-system-x86_64.exe";
+
+  static const String dataDir = "data";
 
   static Future<bool> installQemu(String temporaryDirectoryPath) async {
     if (Platform.isWindows) {
@@ -68,30 +72,37 @@ class CiyInstaller {
     final token = args[0];
     SendPort sendPort = args[1];
     BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+    final appHomeDir = dirname(Platform.script.toFilePath());
+
     try {
       if (Platform.isWindows) {
-        final Directory temporaryDirectory =
-            await getApplicationCacheDirectory();
-        if (await File('$temporaryDirectory/$backendFileNameWindows')
+        if (await File('$appHomeDir/$dataDir/$backendFileNameWindows')
             .exists()) {
           sendPort.send(true);
           return;
         }
-        //TODO: get the file and untar
+
+        final Directory temporaryDirectory =
+            await getTemporaryDirectory();
+
         final request =
             await HttpClient().getUrl(Uri.parse(backendDownloadUrl));
+        request.headers.add("PRIVATE-TOKEN", "glpat-3zqVQwKxwU_Qsvc_8fw8");
         final response = await request.close();
         Stream<List<int>> inputStream = response;
         RandomAccessFile outputFile = await File(
-                '${temporaryDirectory.absolute}/$backendFileNameWindows.tgz')
+                '${temporaryDirectory.path}/$backendFileNameWindows.tgz')
             .open(mode: FileMode.write);
         await inputStream.listen((data) {
           outputFile.writeFromSync(data);
         }).asFuture();
-
+        
         // Close the file after writing
         await outputFile.close();
-        sendPort.send(true);
+        extractFileToDisk(outputFile.path, '$appHomeDir/$dataDir');
+  
+        await File(outputFile.path).delete();
+        sendPort.send(await File('$appHomeDir/$dataDir/$backendFileNameWindows').exists());
       }
     } on Exception {
       // do nothing.. (will send false);
