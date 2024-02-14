@@ -1,3 +1,4 @@
+import 'package:ciy_client/widgets/bloc/cluster_url_bloc.dart';
 import 'package:ciy_client/widgets/bloc/cpu_slider_bloc.dart';
 import 'package:ciy_client/widgets/bloc/ram_slider_bloc.dart';
 import 'package:ciy_client/widgets/events/vm_settings_events.dart';
@@ -18,6 +19,9 @@ class VmSettingsMenu extends StatelessWidget {
         BlocProvider<RAMValuesBloc>(
           create: (context) => RAMValuesBloc(),
         ),
+        BlocProvider<CurrentURLBloc>(
+          create: (context) => CurrentURLBloc(),
+        ),
       ],
       child: Column(children: [
         CPUSliderWidget(),
@@ -33,6 +37,7 @@ class VmSettingsMenu extends StatelessWidget {
                   onPressed: () {
                     context.read<CPUValueBloc>().add(PublishSettings());
                     context.read<RAMValuesBloc>().add(PublishSettings());
+                    context.read<CurrentURLBloc>().add(PublishSettings());
                   },
                   child: Icon(
                     Icons.check,
