@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:math';
-
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:system_info/system_info.dart';
 
@@ -13,7 +12,7 @@ class VMCharacteristics {
   int? vmRam;
 
   String? clusterUrl;
-
+  
   factory VMCharacteristics() {
     return _singleton;
   }
@@ -26,6 +25,7 @@ class VMCharacteristics {
     });
     maxCores = Platform.numberOfProcessors;
     maxRam = (SysInfo.getTotalPhysicalMemory() / pow(2, 30)).ceil();
+
   }
 
   void updateCPU(int cpuCount) {
