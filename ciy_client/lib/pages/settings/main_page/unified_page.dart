@@ -15,7 +15,6 @@ class UnifiedPage extends StatelessWidget {
           width: 400,
           child: Column(children: [
             VmSettingsMenu(),
-            ClusterURLWidget(),
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: InstallationStatusWidget(),

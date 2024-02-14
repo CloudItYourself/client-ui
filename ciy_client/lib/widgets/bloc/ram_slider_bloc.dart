@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:ciy_client/globals/vm_characteristics.dart';
 import 'package:ciy_client/widgets/bloc/vm_settings_events.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 final class RamChangedEvent extends VMSettingsEvent {
@@ -9,15 +10,17 @@ final class RamChangedEvent extends VMSettingsEvent {
   final int newValue;
 }
 
+final class RAMValuesState extends Equatable{
+  final int? minRam;
+  final int? maxRam;
+  final int? increment;
+  final int? currentRam;
 
-class RAMValuesState {
-  int? minRam;
-  int? maxRam;
-  int? increment;
-  int? currentRam;
+  RAMValuesState(this.minRam, this.maxRam, this.increment, this.currentRam);
 
-  RAMValuesState(
-      this.minRam, this.maxRam, this.increment, this.currentRam);
+  @override
+  List<Object?> get props => [minRam, maxRam, increment, currentRam];
+
 }
 
 class RAMValuesBloc extends Bloc<VMSettingsEvent, RAMValuesState> {
@@ -25,13 +28,17 @@ class RAMValuesBloc extends Bloc<VMSettingsEvent, RAMValuesState> {
       : super(RAMValuesState(min(2, VMCharacteristics().maxRam!),
             VMCharacteristics().maxRam!, 1, VMCharacteristics().vmRam)) {
     on<RamChangedEvent>((event, emit) {
-      state.currentRam = event.newValue;
-      emit(state);
+      var newState = RAMValuesState(
+        state.minRam,
+        state.maxRam,
+        state.increment,
+        event.newValue, // Updated value
+      );
+      emit(newState);
     });
 
     on<PublishSettings>(((event, emit) {
       VMCharacteristics().updateRAM(state.currentRam!);
-      emit(state);
     }));
   }
 }

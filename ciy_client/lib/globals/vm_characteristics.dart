@@ -12,6 +12,8 @@ class VMCharacteristics {
   int? vmCores;
   int? vmRam;
 
+  String? clusterUrl;
+
   factory VMCharacteristics() {
     return _singleton;
   }
@@ -20,6 +22,7 @@ class VMCharacteristics {
     SharedPreferences.getInstance().then((value) {
       vmCores = value.getInt("VmCores");
       vmRam = value.getInt("VmRam");
+      clusterUrl = value.getString("ClusterURL");
     });
     maxCores = Platform.numberOfProcessors;
     maxRam = (SysInfo.getTotalPhysicalMemory() / pow(2, 30)).ceil();
@@ -37,5 +40,12 @@ class VMCharacteristics {
         await value.setInt("VmRam", ramCount);
       });
       vmRam = ramCount;
+  }
+
+  void updateClusterURL(String clusterUrl) {
+      SharedPreferences.getInstance().then((value) async {
+        await value.setString("ClusterURL", clusterUrl);
+      });
+      this.clusterUrl = clusterUrl;
   }
 }

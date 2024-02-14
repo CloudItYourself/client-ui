@@ -6,14 +6,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class RAMSliderWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-        create: (_) => RAMValuesBloc(),
-        child: SpecificDivisionsSlider<RamChangedEvent, RAMValuesBloc>(
-            "Memory (GB)",
-            context.select((RAMValuesBloc bloc) => bloc.state.minRam!),
-            context.select((RAMValuesBloc bloc) => bloc.state.maxRam!),
-            context.select((RAMValuesBloc bloc) => bloc.state.increment!),
-            RamChangedEvent.new,
-            context.select((RAMValuesBloc bloc) => bloc.state.currentRam!)));
+    return SpecificDivisionsSlider<RamChangedEvent, RAMValuesBloc>(
+        "Memory (GB)",
+        context.select((RAMValuesBloc bloc) => bloc.state.minRam!),
+        context.select((RAMValuesBloc bloc) => bloc.state.maxRam!),
+        context.select((RAMValuesBloc bloc) => bloc.state.increment!),
+        RamChangedEvent.new,
+        context.select((RAMValuesBloc bloc) => bloc.state.currentRam!));
   }
 }
