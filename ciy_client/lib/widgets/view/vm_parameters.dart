@@ -1,6 +1,6 @@
-import 'package:ciy_client/widgets/bloc/cpu_slider_block.dart';
-import 'package:ciy_client/widgets/bloc/ram_slider_block.dart';
-import 'package:ciy_client/widgets/bloc/vm_settings_events.dart';
+import 'package:ciy_client/widgets/bloc/cpu_slider_bloc.dart';
+import 'package:ciy_client/widgets/bloc/ram_slider_bloc.dart';
+import 'package:ciy_client/widgets/events/vm_settings_events.dart';
 import 'package:ciy_client/widgets/view/cluster_url.dart';
 import 'package:ciy_client/widgets/view/cpu_slider.dart';
 import 'package:ciy_client/widgets/view/ram_slider.dart';

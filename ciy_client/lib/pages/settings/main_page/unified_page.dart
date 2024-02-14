@@ -1,7 +1,4 @@
-import 'package:ciy_client/widgets/view/cluster_url.dart';
-import 'package:ciy_client/widgets/view/cpu_slider.dart';
 import 'package:ciy_client/widgets/view/installation_status.dart';
-import 'package:ciy_client/widgets/view/ram_slider.dart';
 import 'package:ciy_client/widgets/view/vm_parameters.dart';
 import 'package:flutter/material.dart';
 

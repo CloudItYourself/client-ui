@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:ciy_client/globals/vm_characteristics.dart';
-import 'package:ciy_client/widgets/bloc/vm_settings_events.dart';
+import 'package:ciy_client/widgets/events/vm_settings_events.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

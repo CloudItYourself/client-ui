@@ -1,6 +1,6 @@
 import 'package:ciy_client/widgets/view/divisions_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:ciy_client/widgets/bloc/ram_slider_block.dart';
+import 'package:ciy_client/widgets/bloc/ram_slider_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class RAMSliderWidget extends StatelessWidget {
