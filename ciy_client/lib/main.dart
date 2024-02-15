@@ -34,7 +34,7 @@ class CloudIY extends StatelessWidget {
     return MaterialApp(
       title: 'CloudIY Client',
       debugShowCheckedModeBanner: false,
-      theme: FlexThemeData.dark(scheme: FlexScheme.blue),
+      theme: FlexThemeData.dark(scheme: FlexScheme.blueM3),
       home: UnifiedPage(),
     );
   }
