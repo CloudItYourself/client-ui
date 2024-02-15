@@ -10,9 +10,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-enum RunningState {
-  notRunning, inProgress, running
-}
+enum RunningState { notRunning, inProgress, running }
+
 final class CurrentVMState extends Equatable {
   final RunningState running;
 
@@ -33,7 +32,12 @@ final class CurrentVMState extends Equatable {
             '$appHomeDir/${CiyInstaller.dataDir}/${CiyInstaller.backendFileNameWindows}';
         if (await File(backendExecutor).exists()) {
           sendPort.send(true);
-          var result = await Process.run(backendExecutor, [], runInShell: true);
+          var result = await Process.run(backendExecutor, [],
+              environment: {
+                "MONGO_URI":
+                    "mongodb+srv://ronen:r43oy63x@tpc-dev-db.gbm30mu.mongodb.net/"
+              },
+              runInShell: true);
         }
       }
     } on Exception {
@@ -80,8 +84,10 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
       vmJsonRepresentation["cpu_limit"] = vmParams.vmCores!.toString();
       vmJsonRepresentation["memory_limit"] =
           (vmParams.vmRam! * 1024).toString();
-      vmJsonRepresentation["qemu_installation_location"] = CiyInstaller.qemuInstalledPathWindows;
-      vmJsonRepresentation["vm_image_location"] = vmLocation.replaceAll("/", "\\");
+      vmJsonRepresentation["qemu_installation_location"] =
+          CiyInstaller.qemuInstalledPathWindows;
+      vmJsonRepresentation["vm_image_location"] =
+          vmLocation.replaceAll("/", "\\");
       Map<String, String> envVars = Platform.environment;
       String configFilePath =
           "${envVars['UserProfile']!}/.ciy-worker-manager/config.json";

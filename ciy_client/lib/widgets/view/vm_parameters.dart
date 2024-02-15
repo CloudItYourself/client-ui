@@ -31,18 +31,21 @@ class VmSettingsMenu extends StatelessWidget {
           child: ClusterURLWidget(),
         ),
         Align(
-            alignment: Alignment.centerRight,
+            alignment: Alignment.center,
             child: Builder(builder: (context) {
-              return ElevatedButton(
-                  onPressed: () {
-                    context.read<CPUValueBloc>().add(PublishSettings());
-                    context.read<RAMValuesBloc>().add(PublishSettings());
-                    context.read<CurrentURLBloc>().add(PublishSettings());
-                  },
-                  child: Icon(
-                    Icons.check,
-                    size: 15,
-                  ));
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ElevatedButton(
+                    onPressed: () {
+                      context.read<CPUValueBloc>().add(PublishSettings());
+                      context.read<RAMValuesBloc>().add(PublishSettings());
+                      context.read<CurrentURLBloc>().add(PublishSettings());
+                    },
+                    child: Icon(
+                      Icons.check,
+                      size: 15,
+                    )),
+              );
             })),
       ]),
     );
