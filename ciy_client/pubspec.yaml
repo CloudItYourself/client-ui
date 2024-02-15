@@ -23,6 +23,7 @@ dependencies:
   equatable: ^2.0.0
   loading_animation_widget: ^1.2.0
   tar: ^1.0.3
+  flex_color_scheme: ^7.3.1
 
 
 
