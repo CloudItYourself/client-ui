@@ -41,7 +41,7 @@ class InstallationStatusWidget extends StatelessWidget {
         case InstallationStatus.installing:
           children.add(Row(
             children: [
-              Text("Backend "),
+              Text("Backend        "),
               LoadingAnimationWidget.threeArchedCircle(
                 color: Theme.of(context).colorScheme.primary,
                 size: 18,
@@ -51,14 +51,14 @@ class InstallationStatusWidget extends StatelessWidget {
         case InstallationStatus.success:
           children.add(Row(
             children: [
-              Text("Backend "),
+              Text("Backend        "),
               Icon(Icons.check),
             ],
           ));
         case InstallationStatus.failed:
           children.add(Row(
             children: [
-              Text("Backend "),
+              Text("Backend        "),
               Icon(Icons.error),
             ],
           ));
@@ -67,7 +67,7 @@ class InstallationStatusWidget extends StatelessWidget {
         case InstallationStatus.installing:
           children.add(Row(
             children: [
-              Text("VM "),
+              Text("VM                "),
               LoadingAnimationWidget.threeArchedCircle(
                 color: Theme.of(context).colorScheme.primary,
                 size: 18,
@@ -77,14 +77,14 @@ class InstallationStatusWidget extends StatelessWidget {
         case InstallationStatus.success:
           children.add(Row(
             children: [
-              Text("VM "),
+              Text("VM                "),
               Icon(Icons.check),
             ],
           ));
         case InstallationStatus.failed:
           children.add(Row(
             children: [
-              Text("VM "),
+              Text("VM                "),
               Icon(Icons.error),
             ],
           ));
