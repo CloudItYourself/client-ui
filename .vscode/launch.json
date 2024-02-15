@@ -1,0 +1,28 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "ciy_client",
+            "cwd": "ciy_client",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "ciy_client (profile mode)",
+            "cwd": "ciy_client",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "ciy_client (release mode)",
+            "cwd": "ciy_client",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}

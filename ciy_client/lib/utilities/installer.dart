@@ -1,10 +1,10 @@
 import 'dart:isolate';
-import 'package:archive/archive.dart';
-import 'package:archive/archive_io.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
+
+import 'package:tar/tar.dart';
 
 class CiyInstaller {
   static const String qemuDownloadUrl =
@@ -68,11 +68,24 @@ class CiyInstaller {
     }
   }
 
+  static Future<void> extractTarGz(File tarGz, Directory target) async {
+  final input = tarGz.openRead().transform(gzip.decoder);
+
+  await TarReader.forEach(input, (entry) async {
+    final destination =
+        path.joinAll([target.path, ...path.posix.split(entry.name)]);
+
+    final f = File(destination);
+    await f.create(recursive: true);
+    await entry.contents.pipe(f.openWrite());
+  });
+}
+
   static void installBackend(List<dynamic> args) async {
     final token = args[0];
     SendPort sendPort = args[1];
     BackgroundIsolateBinaryMessenger.ensureInitialized(token);
-    final appHomeDir = dirname(Platform.script.toFilePath());
+    final appHomeDir = path.dirname(Platform.script.toFilePath());
 
     try {
       if (Platform.isWindows) {
@@ -99,7 +112,7 @@ class CiyInstaller {
         
         // Close the file after writing
         await outputFile.close();
-        extractFileToDisk(outputFile.path, '$appHomeDir/$dataDir');
+        await extractTarGz(File(outputFile.path), Directory('$appHomeDir/$dataDir'));
   
         await File(outputFile.path).delete();
         sendPort.send(await File('$appHomeDir/$dataDir/$backendFileNameWindows').exists());
