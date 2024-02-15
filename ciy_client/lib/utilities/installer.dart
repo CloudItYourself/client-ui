@@ -125,31 +125,43 @@ class CiyInstaller {
 
   static void installVM(List<dynamic> args) async {
     final token = args[0];
-    BackgroundIsolateBinaryMessenger.ensureInitialized(token);
     SendPort sendPort = args[1];
-    //TODO: implement
+    BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+    final appHomeDir = path.dirname(Platform.script.toFilePath());
 
-    /*if (Platform.isWindows) {
-      final Directory temporaryDirectory = await getDirec();
-      if (await File('$temporaryDirectory/$backendFileNameWindows').exists()) {
-        return true;
+    try {
+      if (Platform.isWindows) {
+        if (await File('$appHomeDir/$dataDir/$vmFileNameWindows')
+            .exists()) {
+          sendPort.send(true);
+          return;
+        }
+
+        final Directory temporaryDirectory =
+            await getTemporaryDirectory();
+
+        final request =
+            await HttpClient().getUrl(Uri.parse(vmDownloadUrl));
+        request.headers.add("PRIVATE-TOKEN", "glpat-3zqVQwKxwU_Qsvc_8fw8");
+        final response = await request.close();
+        Stream<List<int>> inputStream = response;
+        RandomAccessFile outputFile = await File(
+                '${temporaryDirectory.path}/$vmFileNameWindows.tgz')
+            .open(mode: FileMode.write);
+        await inputStream.listen((data) {
+          outputFile.writeFromSync(data);
+        }).asFuture();
+        
+        // Close the file after writing
+        await outputFile.close();
+        await extractTarGz(File(outputFile.path), Directory('$appHomeDir/$dataDir'));
+  
+        await File(outputFile.path).delete();
+        sendPort.send(await File('$appHomeDir/$dataDir/$vmFileNameWindows').exists());
       }
-      //TODO: get the file and untar
-      final request = await HttpClient().getUrl(Uri.parse(backendDownloadUrl));
-      final response = await request.close();
-      Stream<List<int>> inputStream = response;
-      RandomAccessFile outputFile =
-          await File('$temporaryDirectory/$backendFileNameWindows.tgz')
-              .open(mode: FileMode.write);
-      await inputStream.listen((data) {
-        outputFile.writeFromSync(data);
-      }).asFuture();
-
-      // Close the file after writing
-      await outputFile.close();
-      return true;
+    } on Exception {
+      // do nothing.. (will send false);
     }
-    return false;*/
-    sendPort.send(true);
+    return sendPort.send(false);
   }
 }
