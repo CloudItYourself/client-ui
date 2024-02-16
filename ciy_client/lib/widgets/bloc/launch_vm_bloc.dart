@@ -22,7 +22,6 @@ final class CurrentVMState extends Equatable {
   @override
   List<Object?> get props => [running];
 
-
   static void runVM(List<dynamic> args) async {
     final token = args[0];
     SendPort sendPort = args[1];
@@ -37,16 +36,17 @@ final class CurrentVMState extends Equatable {
         var backendExecutor =
             '$appHomeDir/${CiyInstaller.dataDir}/${CiyInstaller.backendFileNameWindows}';
         if (await File(backendExecutor).exists()) {
-          sendPort.send(true);
           var result = await aep.Process.start(backendExecutor, [],
               environment: {
                 "MONGO_URI":
                     "mongodb+srv://ronen:r43oy63x@tpc-dev-db.gbm30mu.mongodb.net/"
               },
               isAutoExit: true);
-
+          Future.delayed(const Duration(seconds: 10), () {
+            sendPort.send(true);
+          });
           recvPort.listen((message) {
-            if (Platform.isWindows){
+            if (Platform.isWindows) {
               killWindowsChildProcesses();
             }
           });
@@ -136,7 +136,14 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
       readCommunicationPort!.close();
     }
     readCommunicationPort = null;
+    var currentIsolateVal = runningVMIsolate;
+    Future.delayed(const Duration(seconds: 5), () {
+      if (currentIsolateVal != null) {
+        currentIsolateVal.kill();
+        runningVMIsolate = null;
+        add(VMStopEvent());
+      }
+    });
     runningVMIsolate = null;
-    add(VMStopEvent());
   }
 }
