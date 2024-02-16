@@ -3,7 +3,9 @@ import 'dart:io';
 import 'dart:isolate';
 import 'package:ciy_client/globals/vm_characteristics.dart';
 import 'package:ciy_client/utilities/installer.dart';
+import 'package:ciy_client/utilities/process_utils.dart';
 import 'package:path/path.dart' as path;
+import 'package:auto_exit_process/auto_exit_process.dart' as aep;
 
 import 'package:ciy_client/widgets/events/vm_running_events.dart';
 import 'package:equatable/equatable.dart';
@@ -20,11 +22,15 @@ final class CurrentVMState extends Equatable {
   @override
   List<Object?> get props => [running];
 
+
   static void runVM(List<dynamic> args) async {
     final token = args[0];
     SendPort sendPort = args[1];
+    ReceivePort recvPort = ReceivePort();
     BackgroundIsolateBinaryMessenger.ensureInitialized(token);
     final appHomeDir = path.dirname(Platform.script.toFilePath());
+
+    sendPort.send(recvPort.sendPort);
 
     try {
       if (Platform.isWindows) {
@@ -32,12 +38,19 @@ final class CurrentVMState extends Equatable {
             '$appHomeDir/${CiyInstaller.dataDir}/${CiyInstaller.backendFileNameWindows}';
         if (await File(backendExecutor).exists()) {
           sendPort.send(true);
-          var result = await Process.run(backendExecutor, [],
+          var result = await aep.Process.start(backendExecutor, [],
               environment: {
                 "MONGO_URI":
                     "mongodb+srv://ronen:r43oy63x@tpc-dev-db.gbm30mu.mongodb.net/"
               },
-              runInShell: true);
+              isAutoExit: true);
+
+          recvPort.listen((message) {
+            if (Platform.isWindows){
+              killWindowsChildProcesses();
+            }
+          });
+          await result.exitCode;
         }
       }
     } on Exception {
@@ -50,7 +63,8 @@ final class CurrentVMState extends Equatable {
 
 class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
   Isolate? runningVMIsolate;
-  ReceivePort? communicationPort;
+  ReceivePort? readCommunicationPort;
+  SendPort? writeCommunicationPort;
 
   VMRunBloc() : super(CurrentVMState(running: RunningState.notRunning)) {
     on<VMStartEvent>((event, emit) async {
@@ -80,7 +94,8 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
       var vmLocation =
           '$appHomeDir/${CiyInstaller.dataDir}/${CiyInstaller.vmFileNameWindows}';
 
-      vmJsonRepresentation["server_url"] = vmParams.clusterUrl!;
+      vmJsonRepresentation["server_url"] =
+          'https://cluster-access.${vmParams.clusterUrl!}';
       vmJsonRepresentation["cpu_limit"] = vmParams.vmCores!.toString();
       vmJsonRepresentation["memory_limit"] =
           (vmParams.vmRam! * 1024).toString();
@@ -99,24 +114,28 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
   }
 
   void runVM() async {
-    communicationPort = ReceivePort();
-    communicationPort!.listen((message) {
-      if (message == true) {
-        add(VMRunningEvent());
+    readCommunicationPort = ReceivePort();
+    readCommunicationPort!.listen((message) {
+      if (message is bool) {
+        if (message == true) {
+          add(VMRunningEvent());
+        } else {
+          killVM();
+        }
       } else {
-        killVM();
+        writeCommunicationPort = message;
       }
     });
     runningVMIsolate = await Isolate.spawn(CurrentVMState.runVM,
-        [RootIsolateToken.instance!, communicationPort!.sendPort]);
+        [RootIsolateToken.instance!, readCommunicationPort!.sendPort]);
   }
 
   void killVM() {
     if (runningVMIsolate != null) {
-      communicationPort!.close();
-      runningVMIsolate!.kill(priority: Isolate.immediate);
+      writeCommunicationPort!.send(true);
+      readCommunicationPort!.close();
     }
-    communicationPort = null;
+    readCommunicationPort = null;
     runningVMIsolate = null;
     add(VMStopEvent());
   }
