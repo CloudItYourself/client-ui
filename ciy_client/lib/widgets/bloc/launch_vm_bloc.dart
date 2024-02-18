@@ -10,69 +10,147 @@ import 'package:ciy_client/widgets/events/vm_running_events.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:http/http.dart' as http;
+import 'package:mutex/mutex.dart';
 
 enum RunningState { notRunning, inProgress, running }
 
+enum RequestType { execute, terminate }
+
+enum ResponseStatus { sucesss, failure }
+
+class PeriodicVMStatus {
+  bool vmConnected;
+  final double vmCpuUsed;
+  final double vmRamUsed;
+  PeriodicVMStatus(this.vmConnected, this.vmCpuUsed, this.vmRamUsed);
+}
+
+class VMIsolate {
+  RunningState currentState = RunningState.notRunning;
+  SendPort sendPort;
+  ReceivePort recvPort;
+  Process? vmProcess;
+  Future? periodicTask;
+  final mutex = Mutex();
+  late final String backendExecutorPath;
+
+  VMIsolate({required this.sendPort, required this.recvPort}) {
+    final appHomeDir = path.dirname(Platform.script.toFilePath());
+    recvPort.listen(handleRequests);
+    backendExecutorPath =
+        '$appHomeDir/${CiyInstaller.dataDir}/${CiyInstaller.backendFileNameWindows}';
+    periodicTask = publishPeriodicRequests();
+  }
+
+  Future<void> publishPeriodicRequests() async {
+    while (true) {
+      await Future.delayed(Duration(seconds: 5));
+      if (currentState != RunningState.notRunning) {
+        final response = await http
+            .get(Uri.parse("http://localhost:28253/api/v1/vm_metrics"));
+        if (response.statusCode == 200) {
+          var responseBody = jsonDecode(response.body);
+          var vmCpuUsed = responseBody["vm_cpu_utilization"] /
+              responseBody["vm_cpu_allocated"];
+          var vmMemoryUsed = responseBody["vm_memory_used"] /
+              responseBody["vm_memory_available"];
+          sendPort.send(PeriodicVMStatus(true, vmCpuUsed, vmMemoryUsed));
+        } else {
+          sendPort.send(PeriodicVMStatus(false, 0.0, 0.0));
+        }
+      }
+    }
+  }
+
+  void handleRequests(dynamic message) {
+    if (message == RequestType.execute) {
+      if (currentState == RunningState.running ||
+          currentState == RunningState.inProgress) {
+        sendPort.send(ResponseStatus.sucesss);
+      } else {
+        if (vmProcess != null) {
+          sendPort.send(ResponseStatus.sucesss);
+        } else {
+          Process.start(backendExecutorPath, [], runInShell: true).whenComplete(() => vmProcess);
+          sendPort.send(ResponseStatus.sucesss);
+        }
+      }
+    } else {
+      if (currentState == RunningState.running ||
+          currentState == RunningState.inProgress) {
+        if (vmProcess != null) {
+          killWindowsChildProcesses();
+          vmProcess!.kill();
+          vmProcess = null;
+        }
+        currentState = RunningState.notRunning;
+        sendPort.send(ResponseStatus.sucesss);
+      } else {
+        sendPort.send(ResponseStatus.sucesss);
+      }
+    }
+
+    mutex.release();
+  }
+}
+
 final class CurrentVMState extends Equatable {
   final RunningState running;
+  final double vmCpuUsed;
+  final double vmRamUsed;
 
-  CurrentVMState({required this.running});
+  CurrentVMState(
+      {required this.running,
+      required this.vmCpuUsed,
+      required this.vmRamUsed});
 
   @override
   List<Object?> get props => [running];
 
-  static void runVM(List<dynamic> args) async {
+  static void runVMIsolate(List<dynamic> args) async {
     final token = args[0];
     SendPort sendPort = args[1];
     ReceivePort recvPort = ReceivePort();
     BackgroundIsolateBinaryMessenger.ensureInitialized(token);
-    final appHomeDir = path.dirname(Platform.script.toFilePath());
-
     sendPort.send(recvPort.sendPort);
-
-    try {
-      if (Platform.isWindows) {
-        var backendExecutor =
-            '$appHomeDir/${CiyInstaller.dataDir}/${CiyInstaller.backendFileNameWindows}';
-        if (await File(backendExecutor).exists()) {
-          var result = await Process.start(backendExecutor, [],
-              environment: {
-                "MONGO_URI":
-                    "mongodb+srv://ronen:r43oy63x@tpc-dev-db.gbm30mu.mongodb.net/"
-              }, runInShell: true);
-          Future.delayed(const Duration(seconds: 10), () {
-            sendPort.send(true);
-          });
-          recvPort.listen((message) {
-            if (Platform.isWindows) {
-              killWindowsChildProcesses();
-            }
-          });
-          await result.exitCode;
-        }
-      }
-    } on Exception {
-      //TODO: log me
+    var vmIsolate = VMIsolate(sendPort: sendPort, recvPort: recvPort);
+    while (true) {
+      await Future.delayed(Duration(seconds: 5));
     }
-
-    sendPort.send(false);
   }
 }
 
 class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
-  Isolate? runningVMIsolate;
-  ReceivePort? readCommunicationPort;
+  Future<Isolate>? runningVMIsolate;
+  late ReceivePort readCommunicationPort;
   SendPort? writeCommunicationPort;
 
-  VMRunBloc() : super(CurrentVMState(running: RunningState.notRunning)) {
+  PeriodicVMStatus? lastStatus;
+  ResponseStatus? latestResponse;
+
+  VMRunBloc()
+      : super(CurrentVMState(
+            running: RunningState.notRunning, vmCpuUsed: 0.0, vmRamUsed: 0.0)) {
+    readCommunicationPort = ReceivePort();
+    readCommunicationPort.listen(handleMessages);
+    runningVMIsolate = Future.sync(() => Isolate.spawn(CurrentVMState.runVMIsolate,[RootIsolateToken.instance!, readCommunicationPort.sendPort]));
+    
+
+    while (writeCommunicationPort == null) {
+      // wait for initial handshake
+      Future.delayed(const Duration(milliseconds: 100));
+    }
+
     on<VMStartEvent>((event, emit) async {
-      prepareVMParametersFile();
       runVM();
-      emit(CurrentVMState(running: RunningState.inProgress));
     });
 
     on<VMRunningEvent>((event, emit) {
-      emit(CurrentVMState(running: RunningState.running));
+      emit(CurrentVMState(
+          running: RunningState.running,
+          vmCpuUsed: lastStatus!.vmCpuUsed,
+          vmRamUsed: lastStatus!.vmRamUsed));
     });
 
     on<VMTerminateRequest>((event, emit) {
@@ -80,7 +158,9 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
     });
 
     on<VMStopEvent>((event, emit) {
-      emit(CurrentVMState(running: RunningState.notRunning));
+      lastStatus = null;
+      emit(CurrentVMState(
+          running: RunningState.notRunning, vmCpuUsed: 0.0, vmRamUsed: 0.0));
     });
   }
 
@@ -112,36 +192,48 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
   }
 
   void runVM() async {
-    readCommunicationPort = ReceivePort();
-    readCommunicationPort!.listen((message) {
-      if (message is bool) {
-        if (message == true) {
-          add(VMRunningEvent());
-        } else {
-          killVM();
-        }
-      } else {
-        writeCommunicationPort = message;
+    if (state.running == RunningState.notRunning &&
+        (lastStatus == null || lastStatus!.vmConnected == false)) {
+      lastStatus = null;
+      prepareVMParametersFile();
+      writeCommunicationPort!.send(RequestType.execute);
+      latestResponse = null;
+      while (latestResponse == null) {
+        Future.delayed(const Duration(milliseconds: 20));
       }
-    });
-    runningVMIsolate = await Isolate.spawn(CurrentVMState.runVM,
-        [RootIsolateToken.instance!, readCommunicationPort!.sendPort]);
+      if (latestResponse == ResponseStatus.sucesss) {
+        emit(CurrentVMState(
+            running: RunningState.inProgress, vmCpuUsed: 0.0, vmRamUsed: 0.0));
+      } else {
+        // TODO: log me
+      }
+    }
   }
 
-  void killVM() {
-    if (runningVMIsolate != null) {
-      writeCommunicationPort!.send(true);
-      readCommunicationPort!.close();
-    }
-    readCommunicationPort = null;
-    var currentIsolateVal = runningVMIsolate;
-    Future.delayed(const Duration(seconds: 5), () {
-      if (currentIsolateVal != null) {
-        currentIsolateVal.kill();
-        runningVMIsolate = null;
-        add(VMStopEvent());
+  void killVM() async {
+    if (state.running != RunningState.notRunning) {
+      lastStatus = null;
+      writeCommunicationPort!.send(RequestType.terminate);
+      latestResponse = null;
+      while (latestResponse == null) {
+        Future.delayed(const Duration(milliseconds: 20));
       }
-    });
-    runningVMIsolate = null;
+      if (latestResponse == ResponseStatus.sucesss) {
+        emit(CurrentVMState(
+            running: RunningState.notRunning, vmCpuUsed: 0.0, vmRamUsed: 0.0));
+      } else {
+        // TODO: log me
+      }
+    }
+  }
+  void handleMessages(dynamic message) {
+    if (message is SendPort) {
+      writeCommunicationPort = message;
+    } else if (message is ResponseStatus) {
+      latestResponse = message;
+    } else if (message is PeriodicVMStatus) {
+      lastStatus = message;
+      add(VMRunningEvent());
+    }
   }
 }
