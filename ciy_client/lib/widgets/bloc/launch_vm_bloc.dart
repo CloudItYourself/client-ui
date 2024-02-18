@@ -5,6 +5,7 @@ import 'package:ciy_client/globals/vm_characteristics.dart';
 import 'package:ciy_client/utilities/installer.dart';
 import 'package:ciy_client/utilities/process_utils.dart';
 import 'package:path/path.dart' as path;
+import 'package:auto_exit_process/auto_exit_process.dart' as aep;
 
 import 'package:ciy_client/widgets/events/vm_running_events.dart';
 import 'package:equatable/equatable.dart';
@@ -63,7 +64,7 @@ class VMIsolate {
     }
   }
 
-  void handleRequests(dynamic message) {
+  void handleRequests(dynamic message) async {
     if (message == RequestType.execute) {
       if (currentState == RunningState.running ||
           currentState == RunningState.inProgress) {
@@ -72,7 +73,10 @@ class VMIsolate {
         if (vmProcess != null) {
           sendPort.send(ResponseStatus.sucesss);
         } else {
-          Process.start(backendExecutorPath, [], runInShell: true).whenComplete(() => vmProcess);
+          vmProcess = await aep.Process.start(backendExecutorPath, [],
+              mode: ProcessStartMode.inheritStdio, // this is incredibly important, DO NOT CHANGE
+              isAutoExit: true,
+              runInShell: true);
           sendPort.send(ResponseStatus.sucesss);
         }
       }
@@ -90,8 +94,6 @@ class VMIsolate {
         sendPort.send(ResponseStatus.sucesss);
       }
     }
-
-    mutex.release();
   }
 }
 
@@ -106,13 +108,13 @@ final class CurrentVMState extends Equatable {
       required this.vmRamUsed});
 
   @override
-  List<Object?> get props => [running];
+  List<Object?> get props => [running, vmCpuUsed, vmRamUsed];
 
   static void runVMIsolate(List<dynamic> args) async {
     final token = args[0];
     SendPort sendPort = args[1];
-    ReceivePort recvPort = ReceivePort();
     BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+    ReceivePort recvPort = ReceivePort();
     sendPort.send(recvPort.sendPort);
     var vmIsolate = VMIsolate(sendPort: sendPort, recvPort: recvPort);
     while (true) {
@@ -134,13 +136,8 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
             running: RunningState.notRunning, vmCpuUsed: 0.0, vmRamUsed: 0.0)) {
     readCommunicationPort = ReceivePort();
     readCommunicationPort.listen(handleMessages);
-    runningVMIsolate = Future.sync(() => Isolate.spawn(CurrentVMState.runVMIsolate,[RootIsolateToken.instance!, readCommunicationPort.sendPort]));
-    
-
-    while (writeCommunicationPort == null) {
-      // wait for initial handshake
-      Future.delayed(const Duration(milliseconds: 100));
-    }
+    runningVMIsolate = Isolate.spawn(CurrentVMState.runVMIsolate,
+        [RootIsolateToken.instance!, readCommunicationPort.sendPort]);
 
     on<VMStartEvent>((event, emit) async {
       runVM();
@@ -192,6 +189,10 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
   }
 
   void runVM() async {
+    while (writeCommunicationPort == null) {
+      await Future.delayed(Duration(milliseconds: 100));
+    }
+
     if (state.running == RunningState.notRunning &&
         (lastStatus == null || lastStatus!.vmConnected == false)) {
       lastStatus = null;
@@ -199,7 +200,7 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
       writeCommunicationPort!.send(RequestType.execute);
       latestResponse = null;
       while (latestResponse == null) {
-        Future.delayed(const Duration(milliseconds: 20));
+        await Future.delayed(Duration(milliseconds: 20));
       }
       if (latestResponse == ResponseStatus.sucesss) {
         emit(CurrentVMState(
@@ -211,12 +212,15 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
   }
 
   void killVM() async {
+    while (writeCommunicationPort == null) {
+      await Future.delayed(Duration(milliseconds: 100));
+    }
     if (state.running != RunningState.notRunning) {
       lastStatus = null;
       writeCommunicationPort!.send(RequestType.terminate);
       latestResponse = null;
       while (latestResponse == null) {
-        Future.delayed(const Duration(milliseconds: 20));
+        await Future.delayed(Duration(milliseconds: 20));
       }
       if (latestResponse == ResponseStatus.sucesss) {
         emit(CurrentVMState(
@@ -226,6 +230,7 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
       }
     }
   }
+
   void handleMessages(dynamic message) {
     if (message is SendPort) {
       writeCommunicationPort = message;
