@@ -25,6 +25,18 @@ class PeriodicVMStatus {
   final double vmCpuUsed;
   final double vmRamUsed;
   PeriodicVMStatus(this.vmConnected, this.vmCpuUsed, this.vmRamUsed);
+  Map<String, dynamic> toJson() => {
+        'vmConnected': vmConnected,
+        'vmCpuUsed': vmCpuUsed,
+        'vmRamUsed': vmRamUsed,
+      };
+  factory PeriodicVMStatus.fromJson(Map<String, dynamic> json) {
+    return PeriodicVMStatus(
+      json['vmConnected'],
+      json['vmCpuUsed'].toDouble(),
+      json['vmRamUsed'].toDouble(),
+    );
+  }
 }
 
 class VMIsolate {
@@ -32,7 +44,6 @@ class VMIsolate {
   SendPort sendPort;
   ReceivePort recvPort;
   Process? vmProcess;
-  Future? periodicTask;
   final mutex = Mutex();
   late final String backendExecutorPath;
 
@@ -41,24 +52,31 @@ class VMIsolate {
     recvPort.listen(handleRequests);
     backendExecutorPath =
         '$appHomeDir/${CiyInstaller.dataDir}/${CiyInstaller.backendFileNameWindows}';
-    periodicTask = publishPeriodicRequests();
   }
 
   Future<void> publishPeriodicRequests() async {
     while (true) {
       await Future.delayed(Duration(seconds: 5));
       if (currentState != RunningState.notRunning) {
-        final response = await http
-            .get(Uri.parse("http://localhost:28253/api/v1/vm_metrics"));
-        if (response.statusCode == 200) {
-          var responseBody = jsonDecode(response.body);
-          var vmCpuUsed = responseBody["vm_cpu_utilization"] /
-              responseBody["vm_cpu_allocated"];
-          var vmMemoryUsed = responseBody["vm_memory_used"] /
-              responseBody["vm_memory_available"];
-          sendPort.send(PeriodicVMStatus(true, vmCpuUsed, vmMemoryUsed));
-        } else {
-          sendPort.send(PeriodicVMStatus(false, 0.0, 0.0));
+        try {
+          final response = await http
+              .get(Uri.parse("http://localhost:28253/api/v1/vm_metrics"));
+          if (response.statusCode == 200) {
+            var responseBody = jsonDecode(response.body);
+            var vmCpuUsed = responseBody["vm_cpu_utilization"] /
+                responseBody["vm_cpu_allocated"];
+            var vmMemoryUsed = responseBody["vm_memory_used"] /
+                responseBody["vm_memory_available"];
+            currentState = RunningState.running;
+            sendPort.send(jsonEncode(PeriodicVMStatus(true, vmCpuUsed, vmMemoryUsed).toJson()));
+          } else {
+            if (currentState == RunningState.running) {
+              currentState = RunningState.notRunning;
+            }
+            sendPort.send(jsonEncode(PeriodicVMStatus(false, 0.0, 0.0).toJson()));
+          }
+        } on Exception {
+          sendPort.send(jsonEncode(PeriodicVMStatus(false, 0.0, 0.0).toJson()));
         }
       }
     }
@@ -74,10 +92,11 @@ class VMIsolate {
           sendPort.send(ResponseStatus.sucesss);
         } else {
           vmProcess = await aep.Process.start(backendExecutorPath, [],
-              mode: ProcessStartMode.inheritStdio, // this is incredibly important, DO NOT CHANGE
-              isAutoExit: true,
-              runInShell: true);
+              mode: ProcessStartMode
+                  .inheritStdio, // this is incredibly important, DO NOT CHANGE
+              isAutoExit: true);
           sendPort.send(ResponseStatus.sucesss);
+          currentState = RunningState.inProgress;
         }
       }
     } else {
@@ -117,9 +136,7 @@ final class CurrentVMState extends Equatable {
     ReceivePort recvPort = ReceivePort();
     sendPort.send(recvPort.sendPort);
     var vmIsolate = VMIsolate(sendPort: sendPort, recvPort: recvPort);
-    while (true) {
-      await Future.delayed(Duration(seconds: 5));
-    }
+    await vmIsolate.publishPeriodicRequests();
   }
 }
 
@@ -236,9 +253,15 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
       writeCommunicationPort = message;
     } else if (message is ResponseStatus) {
       latestResponse = message;
-    } else if (message is PeriodicVMStatus) {
-      lastStatus = message;
-      add(VMRunningEvent());
+    } else if (message is String) {
+      lastStatus = PeriodicVMStatus.fromJson(jsonDecode(message));
+      if (lastStatus!.vmConnected == false &&
+          state.running == RunningState.running) {
+        add(VMTerminateRequest());
+      }
+      if (lastStatus!.vmConnected) {
+        add(VMRunningEvent());
+      }
     }
   }
 }
