@@ -14,7 +14,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:mutex/mutex.dart';
 
-enum RunningState { notRunning, inProgress, running }
+enum RunningState { notRunning, inProgress, running}
 
 enum RequestType { execute, terminate }
 
@@ -103,7 +103,7 @@ class VMIsolate {
       if (currentState == RunningState.running ||
           currentState == RunningState.inProgress) {
         if (vmProcess != null) {
-          killWindowsChildProcesses();
+          await killWindowsChildProcesses();
           vmProcess!.kill();
           vmProcess = null;
         }
@@ -259,7 +259,7 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
           state.running == RunningState.running) {
         add(VMTerminateRequest());
       }
-      if (lastStatus!.vmConnected) {
+      if (lastStatus!.vmConnected && state.running != RunningState.notRunning) {
         add(VMRunningEvent());
       }
     }

@@ -23,7 +23,7 @@ bool checkIfProcessOwnedByMe(Map<int, int> processMap, int processId) {
   }
 }
 
-void killWindowsChildProcesses() async {
+Future<void> killWindowsChildProcesses() async {
   var result = await Process.run('powershell', [
     'Get-WmiObject Win32_Process | Format-Table Name,ProcessId,ParentProcessId -AutoSize'
   ]);
