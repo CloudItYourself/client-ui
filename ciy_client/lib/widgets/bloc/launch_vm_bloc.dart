@@ -5,7 +5,6 @@ import 'package:ciy_client/globals/vm_characteristics.dart';
 import 'package:ciy_client/utilities/installer.dart';
 import 'package:ciy_client/utilities/process_utils.dart';
 import 'package:path/path.dart' as path;
-import 'package:auto_exit_process/auto_exit_process.dart' as aep;
 
 import 'package:ciy_client/widgets/events/vm_running_events.dart';
 import 'package:equatable/equatable.dart';
@@ -36,12 +35,11 @@ final class CurrentVMState extends Equatable {
         var backendExecutor =
             '$appHomeDir/${CiyInstaller.dataDir}/${CiyInstaller.backendFileNameWindows}';
         if (await File(backendExecutor).exists()) {
-          var result = await aep.Process.start(backendExecutor, [],
+          var result = await Process.start(backendExecutor, [],
               environment: {
                 "MONGO_URI":
                     "mongodb+srv://ronen:r43oy63x@tpc-dev-db.gbm30mu.mongodb.net/"
-              },
-              isAutoExit: true);
+              }, runInShell: true);
           Future.delayed(const Duration(seconds: 10), () {
             sendPort.send(true);
           });
