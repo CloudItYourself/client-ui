@@ -10,9 +10,8 @@ class SpecificDivisionsSlider<EventClass extends Object, BlocType extends Bloc>
   final EventClass Function(int) creator;
   final int? initialValue;
 
-  SpecificDivisionsSlider(
-      this.sliderHeader, this.min, this.max, this.step, this.creator,
-      this.initialValue);
+  SpecificDivisionsSlider(this.sliderHeader, this.min, this.max, this.step,
+      this.creator, this.initialValue);
 
   @override
   _SpecificDivisionsSliderState createState() =>
@@ -21,8 +20,6 @@ class SpecificDivisionsSlider<EventClass extends Object, BlocType extends Bloc>
 
 class _SpecificDivisionsSliderState<EventClass extends Object,
     BlocType extends Bloc> extends State<SpecificDivisionsSlider> {
-
-  
   int _sliderValue = -1;
 
   int _mapValueToCustomDivision(int value) {
@@ -58,19 +55,28 @@ class _SpecificDivisionsSliderState<EventClass extends Object,
       children: <Widget>[
         Text(
             '${widget.sliderHeader}: ${_mapValueToCustomDivision(_sliderValue)}'),
-        Slider(
-          value: _sliderValue.toDouble(),
-          min: widget.min.toDouble(),
-          max: widget.max.toDouble(),
-          divisions: ((widget.max - widget.min) / widget.step)
-              .truncate(), // Total number of divisions including custom ones
-          label: _mapValueToCustomDivision(_sliderValue).toString(),
-          onChanged: (double value) {
-            setState(() {
-              _sliderValue = value.toInt();
-              BlocProvider.of<BlocType>(context).add(widget.creator(_sliderValue));
-            });
-          },
+        Padding(
+          padding: const EdgeInsets.only(top:8.0, bottom: 8.0),
+          child: SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+                thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8.0),
+                overlayShape: RoundSliderOverlayShape(overlayRadius: 14.0)),
+            child: Slider(
+              value: _sliderValue.toDouble(),
+              min: widget.min.toDouble(),
+              max: widget.max.toDouble(),
+              divisions: ((widget.max - widget.min) / widget.step)
+                  .truncate(), // Total number of divisions including custom ones
+              label: _mapValueToCustomDivision(_sliderValue).toString(),
+              onChanged: (double value) {
+                setState(() {
+                  _sliderValue = value.toInt();
+                  BlocProvider.of<BlocType>(context)
+                      .add(widget.creator(_sliderValue));
+                });
+              },
+            ),
+          ),
         ),
       ],
     );

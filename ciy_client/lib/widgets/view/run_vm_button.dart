@@ -53,7 +53,7 @@ class RunVMButton extends StatelessWidget {
                       Text("CPU: ${vmRunState.vmCpuUsed.toStringAsFixed(4)}%"),
                       Padding(
                         padding: const EdgeInsets.only(left:12.0),
-                        child: Text("Memory: ${vmRunState.vmRamUsed.toStringAsFixed(4)}%"),
+                        child: Text("Memory: ${vmRunState.vmRamUsed.toStringAsFixed(4)} GB"),
                       )
                     ],
                   ),

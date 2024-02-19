@@ -65,8 +65,7 @@ class VMIsolate {
             var responseBody = jsonDecode(response.body);
             var vmCpuUsed = responseBody["vm_cpu_utilization"] /
                 responseBody["vm_cpu_allocated"];
-            var vmMemoryUsed = responseBody["vm_memory_used"] /
-                responseBody["vm_memory_available"];
+            var vmMemoryUsed = responseBody["vm_memory_used"] / 1024;
             currentState = RunningState.running;
             sendPort.send(jsonEncode(PeriodicVMStatus(true, vmCpuUsed, vmMemoryUsed).toJson()));
           } else {
