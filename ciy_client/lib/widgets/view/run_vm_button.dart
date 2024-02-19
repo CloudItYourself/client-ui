@@ -30,14 +30,39 @@ class RunVMButton extends StatelessWidget {
       }
 
       return Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ElevatedButton(
-              onPressed: enabled
-                  ? () {
-                      context.read<VMRunBloc>().add(event!);
-                    }
-                  : null,
-              child: Text(buttonText)));
+        padding: const EdgeInsets.only(top:60.0),
+        child: Column(
+          children: [
+            Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ElevatedButton(
+                    onPressed: enabled
+                        ? () {
+                            context.read<VMRunBloc>().add(event!);
+                          }
+                        : null,
+                    child: Text(buttonText))),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: SizedBox(
+                  width: 250,
+                  child: Row(
+                    children: [
+                      Text("CPU: ${vmRunState.vmCpuUsed.toStringAsFixed(4)}%"),
+                      Padding(
+                        padding: const EdgeInsets.only(left:12.0),
+                        child: Text("Memory: ${vmRunState.vmRamUsed.toStringAsFixed(4)}%"),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
     });
   }
 }
