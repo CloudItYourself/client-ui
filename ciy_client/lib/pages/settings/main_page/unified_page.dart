@@ -1,8 +1,6 @@
 import 'package:ciy_client/widgets/bloc/launch_vm_bloc.dart';
-import 'package:ciy_client/widgets/bloc/login_bloc.dart';
 import 'package:ciy_client/widgets/bloc/vm_installation_bloc.dart';
 import 'package:ciy_client/widgets/view/installation_status.dart';
-import 'package:ciy_client/widgets/view/login.dart';
 import 'package:ciy_client/widgets/view/run_vm_button.dart';
 import 'package:ciy_client/widgets/view/vm_parameters.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +15,6 @@ class UnifiedPage extends StatelessWidget {
             create: (context) => VMInstallationBloc(),
           ),
           BlocProvider<VMRunBloc>(create: ((context) => VMRunBloc())),
-          BlocProvider<LoginBloc>(create: ((context) => LoginBloc())),
         ],
         child: Scaffold(
           body: Padding(
@@ -39,7 +36,7 @@ class UnifiedPage extends StatelessWidget {
                   child: SizedBox(
                     width: 380,
                     child: Column(children: [
-                      SizedBox(width: 380, height: 200, child: LoginWidget()),
+                      SizedBox(width: 380, height: 200, child: Placeholder()),
                       RunVMButton(),
                     ]),
                   ),
