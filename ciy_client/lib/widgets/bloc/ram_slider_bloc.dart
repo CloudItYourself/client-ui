@@ -25,7 +25,7 @@ final class RAMValuesState extends Equatable{
 
 class RAMValuesBloc extends Bloc<VMSettingsEvent, RAMValuesState> {
   RAMValuesBloc()
-      : super(RAMValuesState(min(2, VMCharacteristics().maxRam!),
+      : super(RAMValuesState(min(3, VMCharacteristics().maxRam!),
             VMCharacteristics().maxRam!, 1, VMCharacteristics().vmRam)) {
     on<RamChangedEvent>((event, emit) {
       var newState = RAMValuesState(
