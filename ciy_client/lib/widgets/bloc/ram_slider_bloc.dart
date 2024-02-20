@@ -34,11 +34,8 @@ class RAMValuesBloc extends Bloc<VMSettingsEvent, RAMValuesState> {
         state.increment,
         event.newValue, // Updated value
       );
+      VMCharacteristics().updateRAM(event.newValue);
       emit(newState);
     });
-
-    on<PublishSettings>(((event, emit) {
-      VMCharacteristics().updateRAM(state.currentRam!);
-    }));
   }
 }

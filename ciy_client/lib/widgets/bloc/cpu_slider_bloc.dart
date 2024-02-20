@@ -29,10 +29,6 @@ class CPUValueBloc extends Bloc<VMSettingsEvent, CPUValuesState> {
       : super(CPUValuesState(min(2, Platform.numberOfProcessors),
             VMCharacteristics().maxCores!, 1, VMCharacteristics().vmCores)) {
 
-    on<PublishSettings>(((event, emit) {
-      VMCharacteristics().updateCPU(state.currentCoreCount!);
-    }));
-
     on<CPUValueChangeEvent>((event, emit) {
       var newState = CPUValuesState(
         state.minCores,
@@ -41,6 +37,7 @@ class CPUValueBloc extends Bloc<VMSettingsEvent, CPUValuesState> {
         event.newValue, // Updated value
       );
       emit(newState);
+      VMCharacteristics().updateCPU(event.newValue);
     });
   }
 }

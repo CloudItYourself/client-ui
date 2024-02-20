@@ -24,13 +24,8 @@ class CurrentURLBloc extends Bloc<VMSettingsEvent, CurrentUrlState> {
       var newState = CurrentUrlState(
         currentUrl: event.newValue, // Updated value
       );
+      VMCharacteristics().updateClusterURL(state.currentUrl!);
       emit(newState);
     });
-
-    on<PublishSettings>(((event, emit) {
-      if (state.currentUrl != null) {
-        VMCharacteristics().updateClusterURL(state.currentUrl!);
-      }
-    }));
   }
 }

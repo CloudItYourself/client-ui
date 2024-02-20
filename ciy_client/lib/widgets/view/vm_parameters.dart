@@ -27,26 +27,9 @@ class VmSettingsMenu extends StatelessWidget {
         CPUSliderWidget(),
         RAMSliderWidget(),
         Padding(
-          padding: const EdgeInsets.only(left:22.0),
+          padding: const EdgeInsets.only(left: 22.0, top: 22.0),
           child: ClusterURLWidget(),
         ),
-        Align(
-            alignment: Alignment.center,
-            child: Builder(builder: (context) {
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ElevatedButton(
-                    onPressed: () {
-                      context.read<CPUValueBloc>().add(PublishSettings());
-                      context.read<RAMValuesBloc>().add(PublishSettings());
-                      context.read<CurrentURLBloc>().add(PublishSettings());
-                    },
-                    child: Icon(
-                      Icons.check,
-                      size: 15,
-                    )),
-              );
-            })),
       ]),
     );
   }
