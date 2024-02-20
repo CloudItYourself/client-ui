@@ -1,3 +1,4 @@
+import 'package:ciy_client/widgets/bloc/additional_settings_bloc.dart';
 import 'package:ciy_client/widgets/bloc/launch_vm_bloc.dart';
 import 'package:ciy_client/widgets/bloc/vm_installation_bloc.dart';
 import 'package:ciy_client/widgets/events/vm_running_events.dart';
@@ -10,6 +11,7 @@ class RunVMButton extends StatelessWidget {
     return Builder(builder: (context) {
       final vmRunState = context.watch<VMRunBloc>().state;
       final vmInstallState = context.watch<VMInstallationBloc>().state;
+      final additionalSettingsState = context.watch<AdditionalSettingsBloc>().state;
 
       String buttonText = "Run";
       bool enabled =
@@ -17,7 +19,6 @@ class RunVMButton extends StatelessWidget {
               vmInstallState.virtualizationInstalled ==
                   InstallationStatus.success &&
               vmInstallState.vmInstalled == InstallationStatus.success;
-
       VMRuntimeEvent? event;
       if (vmRunState.running == RunningState.running) {
         buttonText = "Terminate";
@@ -28,7 +29,10 @@ class RunVMButton extends StatelessWidget {
       } else {
         event = VMStartEvent();
       }
-
+      if (enabled  && vmRunState.running == RunningState.notRunning && additionalSettingsState.selfManaged == true) {
+        enabled = false;
+        context.read<VMRunBloc>().add(VMStartEvent());
+      }
       return Padding(
         padding: const EdgeInsets.only(top:60.0),
         child: Column(

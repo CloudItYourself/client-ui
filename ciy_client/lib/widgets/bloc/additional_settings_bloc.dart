@@ -21,7 +21,7 @@ class AdditionalSettingsBloc
     extends Bloc<AdditionalSettingsEvent, AdditionalSettingsState> {
   AdditionalSettingsBloc()
       : super(AdditionalSettingsState(
-            VMCharacteristics().selfManaged ?? true,
+            VMCharacteristics().selfManaged ?? false,
             VMCharacteristics().runOnStartup ?? true,
             VMCharacteristics().startInTray ?? true)) {
     on<SelfManagerEvent>((event, emit) {
