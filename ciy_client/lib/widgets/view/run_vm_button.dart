@@ -26,6 +26,9 @@ class RunVMButton extends StatelessWidget {
       } else if (vmRunState.running == RunningState.inProgress) {
         buttonText = "Initializing";
         enabled = false;
+      } else if (vmRunState.running == RunningState.terminating) {
+        buttonText = "Terminating";
+        enabled = false;
       } else {
         event = VMStartEvent();
       }

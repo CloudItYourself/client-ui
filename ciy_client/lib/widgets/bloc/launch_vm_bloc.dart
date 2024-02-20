@@ -14,7 +14,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:mutex/mutex.dart';
 
-enum RunningState { notRunning, inProgress, running}
+enum RunningState { notRunning, inProgress, running, terminating}
 
 enum RequestType { execute, terminate }
 
@@ -232,6 +232,8 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
       await Future.delayed(Duration(milliseconds: 100));
     }
     if (state.running != RunningState.notRunning) {
+      emit(CurrentVMState(
+            running: RunningState.terminating, vmCpuUsed: 0.0, vmRamUsed: 0.0));
       lastStatus = null;
       writeCommunicationPort!.send(RequestType.terminate);
       latestResponse = null;
