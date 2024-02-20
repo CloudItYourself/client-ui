@@ -27,6 +27,8 @@ dependencies:
   mutex: ^3.1.0
   http: ^1.2.0
   auto_exit_process: ^1.0.0+1
+  oidc: ^0.4.3
+  oidc_default_store: ^0.2.0+6
 
 
 

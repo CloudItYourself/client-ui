@@ -7,10 +7,7 @@ import 'package:flex_color_scheme/flex_color_scheme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
-
-
   VMCharacteristics();
-
   WindowOptions windowOptions = const WindowOptions(
     size: Size(800, 400),
     minimumSize: Size(800, 400),
