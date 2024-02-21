@@ -58,6 +58,7 @@ class VMIsolate {
     while (true) {
       await Future.delayed(Duration(seconds: 5));
       if (currentState != RunningState.notRunning) {
+        // TODO: add a timeout to check that the vm is responding within 10minutes from first request
         try {
           final response = await http
               .get(Uri.parse("http://localhost:28253/api/v1/vm_metrics"));
@@ -70,6 +71,9 @@ class VMIsolate {
             sendPort.send(jsonEncode(PeriodicVMStatus(true, vmCpuUsed, vmMemoryUsed).toJson()));
           } else {
             if (currentState == RunningState.running) {
+              await killWindowsChildProcesses();
+              vmProcess!.kill();
+              vmProcess = null;
               currentState = RunningState.notRunning;
             }
             sendPort.send(jsonEncode(PeriodicVMStatus(false, 0.0, 0.0).toJson()));
