@@ -1,5 +1,6 @@
 import 'package:ciy_client/widgets/bloc/additional_settings_bloc.dart';
 import 'package:ciy_client/widgets/bloc/launch_vm_bloc.dart';
+import 'package:ciy_client/widgets/bloc/login_bloc.dart';
 import 'package:ciy_client/widgets/bloc/vm_installation_bloc.dart';
 import 'package:ciy_client/widgets/events/vm_running_events.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,9 @@ class RunVMButton extends StatelessWidget {
     return Builder(builder: (context) {
       final vmRunState = context.watch<VMRunBloc>().state;
       final vmInstallState = context.watch<VMInstallationBloc>().state;
-      final additionalSettingsState = context.watch<AdditionalSettingsBloc>().state;
+      final additionalSettingsState =
+          context.watch<AdditionalSettingsBloc>().state;
+      final loginState = context.watch<LoginBloc>().state;
 
       String buttonText = "Run";
       bool enabled =
@@ -32,23 +35,29 @@ class RunVMButton extends StatelessWidget {
       } else {
         event = VMStartEvent();
       }
-      if (enabled  && vmRunState.running == RunningState.notRunning && additionalSettingsState.selfManaged == true) {
+      if (enabled &&
+          vmRunState.running == RunningState.notRunning &&
+          additionalSettingsState.selfManaged == true &&
+          loginState.loggedIn == LoginEnum.loggedIn) {
         enabled = false;
         context.read<VMRunBloc>().add(VMStartEvent());
       }
       return Padding(
-        padding: const EdgeInsets.only(top:60.0),
+        padding: const EdgeInsets.only(top: 30.0),
         child: Column(
           children: [
             Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: ElevatedButton(
-                    onPressed: enabled
-                        ? () {
-                            context.read<VMRunBloc>().add(event!);
-                          }
-                        : null,
-                    child: Text(buttonText))),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                      onPressed: enabled
+                          ? () {
+                              context.read<VMRunBloc>().add(event!);
+                            }
+                          : null,
+                      child: Text(buttonText)),
+                )),
             Align(
               alignment: Alignment.bottomRight,
               child: Padding(
@@ -59,8 +68,9 @@ class RunVMButton extends StatelessWidget {
                     children: [
                       Text("CPU: ${vmRunState.vmCpuUsed.toStringAsFixed(4)}%"),
                       Padding(
-                        padding: const EdgeInsets.only(left:12.0),
-                        child: Text("Memory: ${vmRunState.vmRamUsed.toStringAsFixed(4)} GB"),
+                        padding: const EdgeInsets.only(left: 12.0),
+                        child: Text(
+                            "Memory: ${vmRunState.vmRamUsed.toStringAsFixed(4)} GB"),
                       )
                     ],
                   ),

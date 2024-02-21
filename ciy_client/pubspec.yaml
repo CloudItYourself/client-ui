@@ -27,6 +27,9 @@ dependencies:
   mutex: ^3.1.0
   http: ^1.2.0
   auto_exit_process: ^1.0.0+1
+  pkce: ^1.1.0+1
+  url_launcher: ^6.2.4
+  window_to_front: ^0.0.3
 
 
 
