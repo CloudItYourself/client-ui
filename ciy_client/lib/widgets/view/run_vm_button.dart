@@ -21,7 +21,9 @@ class RunVMButton extends StatelessWidget {
           vmInstallState.backendInstalled == InstallationStatus.success &&
               vmInstallState.virtualizationInstalled ==
                   InstallationStatus.success &&
-              vmInstallState.vmInstalled == InstallationStatus.success;
+              vmInstallState.vmInstalled == InstallationStatus.success &&
+              loginState.loggedIn == LoginEnum.loggedIn;
+              
       VMRuntimeEvent? event;
       if (vmRunState.running == RunningState.running) {
         buttonText = "Terminate";
