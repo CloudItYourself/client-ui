@@ -2,6 +2,7 @@ import 'package:ciy_client/widgets/bloc/additional_settings_bloc.dart';
 import 'package:ciy_client/widgets/bloc/launch_vm_bloc.dart';
 import 'package:ciy_client/widgets/bloc/login_bloc.dart';
 import 'package:ciy_client/widgets/bloc/vm_installation_bloc.dart';
+import 'package:ciy_client/widgets/events/additional_settings_events.dart';
 import 'package:ciy_client/widgets/events/vm_running_events.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,8 +26,12 @@ class RunVMButton extends StatelessWidget {
               loginState.loggedIn == LoginEnum.loggedIn;
 
       VMRuntimeEvent? event;
+      AdditionalSettingsEvent? extraEvent;
+
       if (vmRunState.running == RunningState.running) {
         buttonText = "Terminate";
+
+        extraEvent = SelfManagerEvent(false);
         event = VMTerminateRequest();
       } else if (vmRunState.running == RunningState.inProgress) {
         buttonText = "Initializing";
@@ -56,6 +61,11 @@ class RunVMButton extends StatelessWidget {
                       onPressed: enabled
                           ? () {
                               context.read<VMRunBloc>().add(event!);
+                              if (extraEvent != null) {
+                                context
+                                    .read<AdditionalSettingsBloc>()
+                                    .add(extraEvent);
+                              }
                             }
                           : null,
                       child: Text(buttonText)),
