@@ -39,7 +39,7 @@ class AdditionalSettigsWidget extends StatelessWidget {
                 },
               ),
               CheckboxListTile(
-                title: Text("Start in tray"),
+                title: Text("Start minimized"),
                 value: additionalSettingsState.startInTray,
                 onChanged: (value) {
                   context

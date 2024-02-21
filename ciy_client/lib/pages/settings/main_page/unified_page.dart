@@ -52,7 +52,7 @@ class UnifiedPage extends StatelessWidget {
                   child: Column(children: [
                     LoginWidget(),
                     Padding(
-                      padding: const EdgeInsets.only(top: 30.0),
+                      padding: const EdgeInsets.only(top: 60.0),
                       child: SizedBox(
                           width: 380,
                           height: 160,

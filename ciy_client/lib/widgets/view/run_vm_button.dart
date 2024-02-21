@@ -23,7 +23,7 @@ class RunVMButton extends StatelessWidget {
                   InstallationStatus.success &&
               vmInstallState.vmInstalled == InstallationStatus.success &&
               loginState.loggedIn == LoginEnum.loggedIn;
-              
+
       VMRuntimeEvent? event;
       if (vmRunState.running == RunningState.running) {
         buttonText = "Terminate";
@@ -45,7 +45,7 @@ class RunVMButton extends StatelessWidget {
         context.read<VMRunBloc>().add(VMStartEvent());
       }
       return Padding(
-        padding: const EdgeInsets.only(top: 30.0),
+        padding: const EdgeInsets.only(top: 5.0),
         child: Column(
           children: [
             Padding(
