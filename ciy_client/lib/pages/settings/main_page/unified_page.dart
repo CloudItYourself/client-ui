@@ -40,7 +40,7 @@ class UnifiedPage extends StatelessWidget {
                 child: Column(children: [
                   VmSettingsMenu(),
                   Padding(
-                    padding: const EdgeInsets.all(20.0),
+                    padding: const EdgeInsets.only(top: 40.0, left: 20.0),
                     child: InstallationStatusWidget(),
                   ),
                 ]),
