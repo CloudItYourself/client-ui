@@ -15,7 +15,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:system_tray/system_tray.dart';
 
-
 class UnifiedPage extends StatefulWidget {
   @override
   State<UnifiedPage> createState() => _UnifiedPageState();
@@ -82,7 +81,8 @@ class _UnifiedPageState extends State<UnifiedPage> {
             child: CiyWindowCaption(
                 brightness: Theme.of(context).brightness,
                 backgroundColor: Theme.of(context).colorScheme.background,
-                title: const Text('Cloud IY'))),
+                title: Text("Cloud IY")
+                )),
         body: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(
