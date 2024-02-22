@@ -33,10 +33,10 @@ class _UnifiedPageState extends State<UnifiedPage> {
   Future<void> initSystemTray() async {
     final appHomeDir = path.dirname(Platform.script.toFilePath()).toString();
 
-    String icoPath = Platform.isWindows
-        ? '$appHomeDir/assets/app_icon_windows.ico'
-        : '$appHomeDir/assets/app_icon.png';
-
+    String icoPath =  '$appHomeDir/assets/app_icon_windows.ico';
+    if (!File(icoPath).existsSync()) {
+      icoPath = '$appHomeDir/data/flutter_assets/assets/app_icon_windows.ico';
+    }
     // We first init the systray menu
     await _systemTray.initSystemTray(
       title: "CloudIY",

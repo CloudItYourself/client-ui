@@ -1,7 +1,7 @@
 name: ciy_client
 description: A new Flutter project.
 
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 version: 0.0.1+1
 
@@ -16,7 +16,7 @@ dependencies:
   path_provider: ^2.1.2
   system_info: ^1.0.1
   shared_preferences: ^2.2.2
-  flutter_bloc: ^8.1.4 
+  flutter_bloc: ^8.1.4
   equatable: ^2.0.0
   loading_animation_widget: ^1.2.0
   tar: ^1.0.3
@@ -30,9 +30,8 @@ dependencies:
   system_tray: ^2.0.3
   launch_at_startup: ^0.2.2
   package_info_plus: ^5.0.1
-  windows_single_instance: ^1.0.1 
+  windows_single_instance: ^1.0.1
   flutter_secure_storage: ^9.0.0
-  msix: ^3.16.7
 
 dev_dependencies:
   flutter_test:
@@ -43,11 +42,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/app_icon_windows.ico
     - assets/app_icon_windows.png
-
-msix_config:
-  display_name: Cloud IY
-  publisher_display_name: CloudIY™
-  msix_version: 1.0.0.0
-  logo_path: .\ciy_client\assets\app_icon_windows.png
-  capabilities: internetClientServer, privateNetworkClientServer
