@@ -50,30 +50,31 @@ class RunVMButton extends StatelessWidget {
         context.read<VMRunBloc>().add(VMStartEvent());
       }
       return Padding(
-        padding: const EdgeInsets.only(top: 5.0),
+        padding: const EdgeInsets.only(top: 25.0),
         child: Column(
           children: [
-            Padding(
-                padding: const EdgeInsets.only(right: 60.0),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: ElevatedButton(
-                      onPressed: enabled
-                          ? () {
-                              context.read<VMRunBloc>().add(event!);
-                              if (extraEvent != null) {
-                                context
-                                    .read<AdditionalSettingsBloc>()
-                                    .add(extraEvent);
-                              }
+            Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: 150,
+                child: ElevatedButton(
+                    onPressed: enabled
+                        ? () {
+                            context.read<VMRunBloc>().add(event!);
+                            if (extraEvent != null) {
+                              context
+                                  .read<AdditionalSettingsBloc>()
+                                  .add(extraEvent);
                             }
-                          : null,
-                      child: Text(buttonText)),
-                )),
+                          }
+                        : null,
+                    child: Text(buttonText)),
+              ),
+            ),
             Align(
               alignment: Alignment.bottomRight,
               child: Padding(
-                padding: const EdgeInsets.only(top: 8.0, right: 35.0),
+                padding: const EdgeInsets.only(top: 8.0, right: 50.0),
                 child: SizedBox(
                   width: 250,
                   child: Row(

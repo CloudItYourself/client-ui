@@ -33,7 +33,7 @@ dependencies:
   system_tray: ^2.0.3
   launch_at_startup: ^0.2.2
   package_info_plus: ^5.0.1
-
+  windows_single_instance: ^1.0.1 
 
 dev_dependencies:
   flutter_test:

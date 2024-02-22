@@ -3,9 +3,17 @@ import 'package:ciy_client/pages/settings/main_page/unified_page.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
+import 'package:windows_single_instance/windows_single_instance.dart';
 
-void main() async {
+void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await WindowsSingleInstance.ensureSingleInstance(
+    args,
+    "ciy-ui",
+    onSecondWindow: (args) {
+    });
+
   await windowManager.ensureInitialized();
 
   VMCharacteristics();
