@@ -54,7 +54,7 @@ class RunVMButton extends StatelessWidget {
         child: Column(
           children: [
             Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.only(right: 60.0),
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: ElevatedButton(
@@ -73,7 +73,7 @@ class RunVMButton extends StatelessWidget {
             Align(
               alignment: Alignment.bottomRight,
               child: Padding(
-                padding: const EdgeInsets.only(top: 8.0),
+                padding: const EdgeInsets.only(top: 8.0, right: 35.0),
                 child: SizedBox(
                   width: 250,
                   child: Row(

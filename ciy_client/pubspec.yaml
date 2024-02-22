@@ -31,6 +31,8 @@ dependencies:
   url_launcher: ^6.2.4
   window_to_front: ^0.0.3
   system_tray: ^2.0.3
+  launch_at_startup: ^0.2.2
+  package_info_plus: ^5.0.1
 
 
 dev_dependencies:
