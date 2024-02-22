@@ -12,13 +12,10 @@ dependencies:
   flutter:
     sdk: flutter
 
-  english_words: ^4.0.0
-  provider: ^6.0.0
   window_manager: ^0.2.7
   path_provider: ^2.1.2
   system_info: ^1.0.1
   shared_preferences: ^2.2.2
-  file_picker: ^6.1.1
   flutter_bloc: ^8.1.4 
   equatable: ^2.0.0
   loading_animation_widget: ^1.2.0
@@ -52,5 +49,5 @@ msix_config:
   display_name: Cloud IY
   publisher_display_name: CloudIY™
   msix_version: 1.0.0.0
-  logo_path: ciy_client\assets\app_icon_windows.png
+  logo_path: .\ciy_client\assets\app_icon_windows.png
   capabilities: internetClientServer, privateNetworkClientServer
