@@ -8,7 +8,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
 
-
   VMCharacteristics();
 
   WindowOptions windowOptions = const WindowOptions(
@@ -20,8 +19,12 @@ void main() async {
     titleBarStyle: TitleBarStyle.hidden,
   );
   windowManager.waitUntilReadyToShow(windowOptions, () async {
-    await windowManager.show();
-    await windowManager.focus();
+    if (VMCharacteristics().startInTray ?? true) {
+      await windowManager.hide();
+    } else {
+      await windowManager.show();
+      await windowManager.focus();
+    }
   });
 
   runApp(CloudIY());

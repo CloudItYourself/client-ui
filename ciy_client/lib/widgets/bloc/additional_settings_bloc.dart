@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:ciy_client/globals/vm_characteristics.dart';
 import 'package:ciy_client/widgets/events/additional_settings_events.dart';
 import 'package:equatable/equatable.dart';
