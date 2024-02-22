@@ -14,7 +14,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:mutex/mutex.dart';
 
-enum RunningState { notRunning, inProgress, running, terminating}
+enum RunningState { notRunning, inProgress, running, terminating }
 
 enum RequestType { execute, terminate }
 
@@ -68,15 +68,17 @@ class VMIsolate {
                 responseBody["vm_cpu_allocated"];
             var vmMemoryUsed = responseBody["vm_memory_used"] / 1024;
             currentState = RunningState.running;
-            sendPort.send(jsonEncode(PeriodicVMStatus(true, vmCpuUsed, vmMemoryUsed).toJson()));
+            sendPort.send(jsonEncode(
+                PeriodicVMStatus(true, vmCpuUsed, vmMemoryUsed).toJson()));
           } else {
             if (currentState == RunningState.running) {
-              await killWindowsChildProcesses();
+              await killWindowsChildProcesses(vmProcess!.pid);
               vmProcess!.kill();
               vmProcess = null;
               currentState = RunningState.notRunning;
             }
-            sendPort.send(jsonEncode(PeriodicVMStatus(false, 0.0, 0.0).toJson()));
+            sendPort
+                .send(jsonEncode(PeriodicVMStatus(false, 0.0, 0.0).toJson()));
           }
         } on Exception {
           sendPort.send(jsonEncode(PeriodicVMStatus(false, 0.0, 0.0).toJson()));
@@ -94,9 +96,9 @@ class VMIsolate {
         if (vmProcess != null) {
           sendPort.send(ResponseStatus.sucesss);
         } else {
-          vmProcess = await aep.Process.start(backendExecutorPath, [],
-              mode: ProcessStartMode
-                  .inheritStdio, // this is incredibly important, DO NOT CHANGE
+          vmProcess = await aep.Process.start(
+              'cmd', ['/c', 'start', '/B', backendExecutorPath, '>' ,'nul', '2>&1'],
+              mode: ProcessStartMode.normal, 
               isAutoExit: true);
           sendPort.send(ResponseStatus.sucesss);
           currentState = RunningState.inProgress;
@@ -106,7 +108,7 @@ class VMIsolate {
       if (currentState == RunningState.running ||
           currentState == RunningState.inProgress) {
         if (vmProcess != null) {
-          await killWindowsChildProcesses();
+          await killWindowsChildProcesses(vmProcess!.pid);
           vmProcess!.kill();
           vmProcess = null;
         }
@@ -237,7 +239,7 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
     }
     if (state.running != RunningState.notRunning) {
       emit(CurrentVMState(
-            running: RunningState.terminating, vmCpuUsed: 0.0, vmRamUsed: 0.0));
+          running: RunningState.terminating, vmCpuUsed: 0.0, vmRamUsed: 0.0));
       lastStatus = null;
       writeCommunicationPort!.send(RequestType.terminate);
       latestResponse = null;

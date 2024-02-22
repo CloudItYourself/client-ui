@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-bool checkIfProcessOwnedByMe(Map<int, int> processMap, int processId) {
+bool checkIfProcessOwnedByMe(Map<int, int> processMap, int processId, int additionalPid) {
   if (processId == pid) {
     return false;
   }
@@ -16,14 +16,14 @@ bool checkIfProcessOwnedByMe(Map<int, int> processMap, int processId) {
     if (currentParent == currentProcess) {
       return false;
     }
-    if (currentParent == pid) {
+    if (currentParent == pid || currentParent == additionalPid) {
       return true;
     }
     currentProcess = currentParent;
   }
 }
 
-Future<void> killWindowsChildProcesses() async {
+Future<void> killWindowsChildProcesses(int owningProcessPid) async {
   var result = await Process.run('powershell', [
     'Get-WmiObject Win32_Process | Format-Table Name,ProcessId,ParentProcessId -AutoSize'
   ]);
@@ -44,7 +44,7 @@ Future<void> killWindowsChildProcesses() async {
     }
   }
   for (int process in processIdToParentId.keys) {
-    if (checkIfProcessOwnedByMe(processIdToParentId, process)) {
+    if (checkIfProcessOwnedByMe(processIdToParentId, process, owningProcessPid)) {
       Process.killPid(process);
     }
   }
