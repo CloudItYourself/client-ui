@@ -86,8 +86,7 @@ class InstallationStatusWidget extends StatelessWidget {
           ]),
         ));
       });
-      return Align(
-          alignment: Alignment.centerLeft, child: Column(children: children));
+      return Column(children: children);
     });
   }
 }

@@ -1,5 +1,5 @@
 import 'package:ciy_client/globals/vm_characteristics.dart';
-import 'package:ciy_client/pages/settings/main_page/unified_page.dart';
+import 'package:ciy_client/pages/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
@@ -19,8 +19,8 @@ void main(List<String> args) async {
   VMCharacteristics();
 
   WindowOptions windowOptions = const WindowOptions(
-    size: Size(800, 400),
-    minimumSize: Size(800, 400),
+    size: Size(550, 400),
+    minimumSize: Size(550, 400),
     center: true,
     backgroundColor: Colors.transparent,
     skipTaskbar: false,

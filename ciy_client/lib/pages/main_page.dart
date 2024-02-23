@@ -1,16 +1,16 @@
 import 'dart:io';
+import 'package:ciy_client/pages/home.dart';
+import 'package:ciy_client/pages/settings.dart';
+import 'package:ciy_client/widgets/bloc/cluster_url_bloc.dart';
+import 'package:ciy_client/widgets/bloc/cpu_slider_bloc.dart';
+import 'package:ciy_client/widgets/bloc/ram_slider_bloc.dart';
 import 'package:path/path.dart' as path;
 
 import 'package:ciy_client/widgets/bloc/additional_settings_bloc.dart';
 import 'package:ciy_client/widgets/bloc/launch_vm_bloc.dart';
 import 'package:ciy_client/widgets/bloc/login_bloc.dart';
 import 'package:ciy_client/widgets/bloc/vm_installation_bloc.dart';
-import 'package:ciy_client/widgets/view/additional_settings.dart';
 import 'package:ciy_client/widgets/view/app_bar.dart';
-import 'package:ciy_client/widgets/view/installation_status.dart';
-import 'package:ciy_client/widgets/view/login.dart';
-import 'package:ciy_client/widgets/view/run_vm_button.dart';
-import 'package:ciy_client/widgets/view/vm_parameters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:system_tray/system_tray.dart';
@@ -23,6 +23,7 @@ class UnifiedPage extends StatefulWidget {
 class _UnifiedPageState extends State<UnifiedPage> {
   final AppWindow _appWindow = AppWindow();
   final SystemTray _systemTray = SystemTray();
+  var selectedPageIndex = 0;
 
   @override
   void initState() {
@@ -33,7 +34,7 @@ class _UnifiedPageState extends State<UnifiedPage> {
   Future<void> initSystemTray() async {
     final appHomeDir = path.dirname(Platform.script.toFilePath()).toString();
 
-    String icoPath =  '$appHomeDir/assets/app_icon_windows.ico';
+    String icoPath = '$appHomeDir/assets/app_icon_windows.ico';
     if (!File(icoPath).existsSync()) {
       icoPath = '$appHomeDir/data/flutter_assets/assets/app_icon_windows.ico';
     }
@@ -65,6 +66,15 @@ class _UnifiedPageState extends State<UnifiedPage> {
 
   @override
   Widget build(BuildContext context) {
+    Widget page;
+    switch (selectedPageIndex) {
+      case 0:
+        page = HomePage();
+      case 1:
+        page = SettingsPage();
+      default:
+        throw UnimplementedError('no widget for $selectedPageIndex');
+    }
     return MultiBlocProvider(
       providers: [
         BlocProvider<VMInstallationBloc>(
@@ -74,6 +84,15 @@ class _UnifiedPageState extends State<UnifiedPage> {
         BlocProvider<AdditionalSettingsBloc>(
             create: ((context) => AdditionalSettingsBloc())),
         BlocProvider<LoginBloc>(create: ((context) => LoginBloc())),
+        BlocProvider<CPUValueBloc>(
+          create: (context) => CPUValueBloc(),
+        ),
+        BlocProvider<RAMValuesBloc>(
+          create: (context) => RAMValuesBloc(),
+        ),
+        BlocProvider<CurrentURLBloc>(
+          create: (context) => CurrentURLBloc(),
+        ),
       ],
       child: Scaffold(
         appBar: PreferredSize(
@@ -81,41 +100,38 @@ class _UnifiedPageState extends State<UnifiedPage> {
             child: CiyWindowCaption(
                 brightness: Theme.of(context).brightness,
                 backgroundColor: Theme.of(context).colorScheme.background,
-                title: Text("Cloud IY")
-                )),
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 380,
-                child: Column(children: [
-                  VmSettingsMenu(),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 40.0, left: 20.0),
-                    child: InstallationStatusWidget(),
+                title: Text("Cloud IY"))),
+        body: Row(
+          children: [
+            SafeArea(
+              child: NavigationRail(
+                extended: false,
+                destinations: [
+                  NavigationRailDestination(
+                    icon: Icon(Icons.home),
+                    label: Text('Home'),
                   ),
-                ]),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.settings),
+                    label: Text('Settings'),
+                  ),
+                ],
+                selectedIndex: selectedPageIndex, // ← Change to this.
+                onDestinationSelected: (value) {
+                  // ↓ Replace print with this.
+                  setState(() {
+                    selectedPageIndex = value;
+                  });
+                },
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: SizedBox(
-                  width: 380,
-                  child: Column(children: [
-                    LoginWidget(),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 60.0),
-                      child: SizedBox(
-                          width: 380,
-                          height: 160,
-                          child: AdditionalSettigsWidget()),
-                    ),
-                    RunVMButton(),
-                  ]),
-                ),
+            ),
+            Expanded(
+              child: Container(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                child: page,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
