@@ -11,10 +11,13 @@ class VmSettingsMenu extends StatelessWidget {
     return Builder(builder: (context) {
       context.watch<RAMValuesBloc>();
       context.watch<CPUValueBloc>();
-      return Column(children: [
-        CPUSliderWidget(),
-        RAMSliderWidget(),
-      ]);
+      return Padding(
+        padding: const EdgeInsets.only(left: 30.0),
+        child: Column(children: [
+          CPUSliderWidget(),
+          RAMSliderWidget(),
+        ]),
+      );
     });
   }
 }
