@@ -22,21 +22,36 @@ class LoginWidget extends StatelessWidget {
             size: 20,
           );
         case LoginEnum.notLoggingIn:
-          buttonChild = Text("Login");
+          buttonChild = SizedBox(
+            child: Row(
+              children: [
+                Icon(Icons.login),
+                Text("Login")
+              ],
+            ),
+          );
         case LoginEnum.loggedIn:
-          buttonChild = Text("Logout");
+          buttonChild = Row(
+            children: [
+              Icon(Icons.logout),
+              Text("Logout"),
+            ],
+          );
       }
-      return ElevatedButton(
-          onPressed: vmRunning
-              ? null
-              : loggedIn == LoginEnum.loggedIn
-                  ? () {
-                      context.read<LoginBloc>().add(LogoutRequest());
-                    }
-                  : () {
-                      context.read<LoginBloc>().add(LoginRequest());
-                    },
-          child: buttonChild);
+      return SizedBox(
+        width: 110,
+        child: ElevatedButton(
+            onPressed: vmRunning
+                ? null
+                : loggedIn == LoginEnum.loggedIn
+                    ? () {
+                        context.read<LoginBloc>().add(LogoutRequest());
+                      }
+                    : () {
+                        context.read<LoginBloc>().add(LoginRequest());
+                      },
+            child: buttonChild),
+      );
     });
   }
 }
