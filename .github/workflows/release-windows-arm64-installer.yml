@@ -11,16 +11,19 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-        
-      - uses: Vampire/setup-wsl@v3
-        with:
-          distribution: Ubuntu-22.04
 
+      - run: wsl --set-default-version 2
+      - name: Setup WSL for flutter
+        uses: Vampire/setup-wsl@v1
+        with:
+          distribution: Ubuntu-20.04
+        
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.16.9'
           channel: stable
+        
 
       - name: Flutter build
         run: flutter build windows --release
