@@ -25,8 +25,9 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "E:\FreeCloudProject\ciy\client-ui\ciy_client\build\windows\x64\runner\Release\ciy_client.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "E:\FreeCloudProject\ciy\client-ui\ciy_client\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\windows\x64\runner\Release\ciy_client.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "qemu-w64-setup-20211215.exe"; DestDir: "{app}\external_dependencies"; Flags: ignoreversion
+Source: "..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -35,4 +36,19 @@ Name: "{autodesktop}\CloudIY"; Filename: "{app}\ciy_client.exe"; Tasks: desktopi
 
 [Run]
 Filename: "{app}\ciy_client.exe"; Description: "{cm:LaunchProgram,CloudIY}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  Params: string;
+  ErrorCode: Integer;
+begin
+  if CurStep = ssPostInstall then
+  begin
+    Params := '/S'; // Modify this line with your command
+    if not ShellExec('' ,ExpandConstant('{app}\external_dependencies\qemu-w64-setup-20211215.exe'), Params, '', SW_HIDE, ewWaitUntilTerminated, ErrorCode) then
+      MsgBox('Command execution failed. Exit code: ' + IntToStr(ErrorCode), mbError, MB_OK);
+  end;
+end;
+
 
