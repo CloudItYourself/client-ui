@@ -12,12 +12,12 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
 
-      - name: Set up Flutter
-        # This is the version of the action for setting up Python, not the Python version.
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.16.9'
-          channel: stable
+      # - name: Set up Flutter TODO: fix me later
+      #   # This is the version of the action for setting up Python, not the Python version.
+      #   uses: subosito/flutter-action@v2
+      #   with:
+      #     flutter-version: '3.16.9'
+      #     channel: stable
 
       - name: Flutter build
         run: flutter build windows --release
