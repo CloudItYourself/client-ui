@@ -17,6 +17,7 @@ PrivilegesRequiredOverridesAllowed=commandline
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
+OutputDir=Output
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -37,6 +38,22 @@ Name: "{autodesktop}\CloudIY"; Filename: "{app}\ciy_client.exe"; Tasks: desktopi
 [Run]
 Filename: "{app}\ciy_client.exe"; Description: "{cm:LaunchProgram,CloudIY}"; Flags: nowait postinstall skipifsilent
 
+Filename: "powershell.exe"; Parameters: \
+  "New-NetFirewallRule -DisplayName 'Allow virtualization internet access (outbound)' -Direction Outbound -Program 'C:\Program Files\qemu\qemu-system-x86_64.exe' -Action Allow"; \
+  WorkingDir: "{app}"; Flags: runhidden
+
+Filename: "powershell.exe"; Parameters: \
+  "New-NetFirewallRule -DisplayName 'Allow virtualization internet access (inbound)' -Direction Inbound -Program 'C:\Program Files\qemu\qemu-system-x86_64.exe' -Action Allow"; \
+  WorkingDir: "{app}"; Flags: runhidden
+
+Filename: "powershell.exe"; Parameters: \
+  "New-NetFirewallRule -DisplayName 'Allow ciy runner internet access (outbound)' -Direction Outbound -Program 'ExpandConstant({app}\data\external_controller.exe)' -Action Allow"; \
+  WorkingDir: "{app}"; Flags: runhidden
+
+Filename: "powershell.exe"; Parameters: \
+  "New-NetFirewallRule -DisplayName 'Allow ciy runner internet access (inbound)' -Direction Inbound -Program 'ExpandConstant({app}\data\external_controller.exe)' -Action Allow"; \
+  WorkingDir: "{app}"; Flags: runhidden
+
 [Code]
 procedure CurStepChanged(CurStep: TSetupStep);
 var
@@ -50,5 +67,8 @@ begin
       MsgBox('Command execution failed. Exit code: ' + IntToStr(ErrorCode), mbError, MB_OK);
   end;
 end;
+
+[UninstallDelete]
+Type: filesandordirs; Name: "{app}\data"
 
 
