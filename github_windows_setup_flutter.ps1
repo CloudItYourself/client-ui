@@ -41,8 +41,7 @@ if (-not (Test-Path $FLUTTER_RUNNER_TOOL_CACHE)) {
     Write-Host "Downloading $FLUTTER_DOWNLOAD_URL"
 
     $DOWNLOAD_PATH = "$env:TEMP\$FLUTTER_BUILD"
-    Invoke-WebRequest -Uri $FLUTTER_DOWNLOAD_URL -OutFile $DOWNLOAD_PATH
-
+    curl.exe -L -o $DOWNLOAD_PATH $FLUTTER_DOWNLOAD_URL
     Write-Host "Finished downloading $FLUTTER_DOWNLOAD_URL"
 
     New-Item -ItemType Directory -Path $FLUTTER_RUNNER_TOOL_CACHE -ErrorAction SilentlyContinue | Out-Null
