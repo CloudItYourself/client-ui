@@ -20,7 +20,7 @@ jobs:
 
       - name: Copy DLLs
         run: |
-          Copy-Item -Path "c:\Windows\System32\vcruntime140.dll" -Destination "./build/windows/x64/runner/Release/"
+          Copy-Item -Path "c:\Windows\System32\msvcp140.dll" -Destination "./build/windows/x64/runner/Release/"
           Copy-Item -Path "c:\Windows\System32\vcruntime140.dll" -Destination "./build/windows/x64/runner/Release/"
           Copy-Item -Path "c:\Windows\System32\vcruntime140_1.dll" -Destination "./build/windows/x64/runner/Release/"
   
@@ -36,4 +36,4 @@ jobs:
 
       - name: Upload to registry
         run: |
-          curl.exe -X PUT --header "PRIVATE-TOKEN: glpat-3zqVQwKxwU_Qsvc_8fw8" -T ./Output/mysetup.exe $env:PACKAGE_REGISTRY_URL/$env:PACKAGE_VERSION/ciy-ui-$env:PACKAGE_VERSION-win-amd64.exe
+          curl.exe -X PUT --header "PRIVATE-TOKEN: glpat-3zqVQwKxwU_Qsvc_8fw8" -T ./Installers/Output/mysetup.exe $env:PACKAGE_REGISTRY_URL/$env:PACKAGE_VERSION/ciy-ui-$env:PACKAGE_VERSION-win-amd64.exe
