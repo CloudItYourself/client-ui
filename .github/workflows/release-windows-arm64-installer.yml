@@ -11,12 +11,10 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
-        
+
       - name: Set up Flutter
-        uses: flutter-actions/setup-flutter@v2
-        with:
-          channel: stable
-          version: 3.16.9
+        run: github_windows_setup_flutter.ps1 3.16.9 stable
+        shell: pwsh
           
       - name: Flutter build
         run: flutter build windows --release
