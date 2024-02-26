@@ -16,10 +16,8 @@ jobs:
         uses: flutter-actions/setup-flutter@v2
         with:
           channel: stable
-          version: '3.16.9
-
-        
-
+          version: 3.16.9
+          
       - name: Flutter build
         run: flutter build windows --release
 
