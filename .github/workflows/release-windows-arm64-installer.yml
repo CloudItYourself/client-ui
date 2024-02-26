@@ -20,9 +20,9 @@ jobs:
 
       - name: Copy DLLs
         run: |
-          Copy-Item -Path "msvcp140.dll" -Destination "./build/windows/x64/runner/Release/"
-          Copy-Item -Path "vcruntime140.dll" -Destination "./build/windows/x64/runner/Release/"
-          Copy-Item -Path "vcruntime140_1.dll" -Destination "./build/windows/x64/runner/Release/"
+          Copy-Item -Path "c:\Windows\System32\vcruntime140.dll" -Destination "./build/windows/x64/runner/Release/"
+          Copy-Item -Path "c:\Windows\System32\vcruntime140.dll" -Destination "./build/windows/x64/runner/Release/"
+          Copy-Item -Path "c:\Windows\System32\vcruntime140_1.dll" -Destination "./build/windows/x64/runner/Release/"
   
       - name: Download virtualization
         run: |
