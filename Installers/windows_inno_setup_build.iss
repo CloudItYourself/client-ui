@@ -47,19 +47,19 @@ Filename: "powershell.exe"; Parameters: \
   WorkingDir: "{app}"; Flags: runhidden
 
 Filename: "powershell.exe"; Parameters: \
-  "New-NetFirewallRule -DisplayName 'Allow ciy runner internet access (outbound)' -Direction Outbound -Program 'ExpandConstant({app}\data\external_controller.exe)' -Action Allow"; \
+  "New-NetFirewallRule -DisplayName 'Allow ciy runner internet access (outbound)' -Direction Outbound -Program '{app}\data\external_controller.exe' -Action Allow"; \
   WorkingDir: "{app}"; Flags: runhidden
 
 Filename: "powershell.exe"; Parameters: \
-  "New-NetFirewallRule -DisplayName 'Allow ciy runner internet access (inbound)' -Direction Inbound -Program 'ExpandConstant({app}\data\external_controller.exe)' -Action Allow"; \
+  "New-NetFirewallRule -DisplayName 'Allow ciy runner internet access (inbound)' -Direction Inbound -Program '{app}\data\external_controller.exe' -Action Allow"; \
   WorkingDir: "{app}"; Flags: runhidden
 
 Filename: "powershell.exe"; Parameters: \
-  "New-NetFirewallRule -DisplayName 'Allow ciy external runner internet access (outbound)' -Direction Outbound -Program 'ExpandConstant({localappdata}\.ciy_external_runner\external_controller.exe)' -Action Allow"; \
+  "New-NetFirewallRule -DisplayName 'Allow ciy external runner internet access (outbound)' -Direction Outbound -Program '{localappdata}\.ciy_external_runner\external_controller.exe' -Action Allow"; \
   WorkingDir: "{app}"; Flags: runhidden
 
 Filename: "powershell.exe"; Parameters: \
-  "New-NetFirewallRule -DisplayName 'Allow ciy external runner internet access (inbound)' -Direction Inbound -Program 'ExpandConstant({localappdata}\.ciy_external_runner\external_controller.exe)' -Action Allow"; \
+  "New-NetFirewallRule -DisplayName 'Allow ciy external runner internet access (inbound)' -Direction Inbound -Program '{localappdata}\.ciy_external_runner\external_controller.exe' -Action Allow"; \
   WorkingDir: "{app}"; Flags: runhidden
 
 [Code]
