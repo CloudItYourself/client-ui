@@ -40,10 +40,12 @@ class PeriodicVMStatus {
 }
 
 class VMIsolate {
+  final Duration startupTimeoutInMinutes = Duration(minutes: 10);
   RunningState currentState = RunningState.notRunning;
   SendPort sendPort;
   ReceivePort recvPort;
   Process? vmProcess;
+  DateTime? startTime;
   final mutex = Mutex();
   late final String backendExecutorPath;
 
@@ -56,9 +58,8 @@ class VMIsolate {
 
   Future<void> publishPeriodicRequests() async {
     while (true) {
-      await Future.delayed(Duration(seconds: 5));
+      await Future.delayed(Duration(seconds: 1));
       if (currentState != RunningState.notRunning) {
-        // TODO: add a timeout to check that the vm is responding within 10minutes from first request
         try {
           final response = await http
               .get(Uri.parse("http://localhost:28253/api/v1/vm_metrics"));
@@ -71,10 +72,11 @@ class VMIsolate {
             sendPort.send(jsonEncode(
                 PeriodicVMStatus(true, vmCpuUsed, vmMemoryUsed).toJson()));
           } else {
-            if (currentState == RunningState.running) {
+            if (currentState == RunningState.running ||  (startTime != null && DateTime.now().difference(startTime!) > startupTimeoutInMinutes)) {
               await killWindowsChildProcesses(vmProcess!.pid);
               vmProcess!.kill();
               vmProcess = null;
+              startTime = null;
               currentState = RunningState.notRunning;
             }
             sendPort
@@ -101,16 +103,24 @@ class VMIsolate {
               mode: ProcessStartMode.normal, 
               isAutoExit: true);
           sendPort.send(ResponseStatus.sucesss);
+          startTime = DateTime.now();
           currentState = RunningState.inProgress;
         }
       }
     } else {
       if (currentState == RunningState.running ||
           currentState == RunningState.inProgress) {
+
+        if (currentState == RunningState.running) {
+          // ignore: unused_local_variable
+          final postResult = await http.post(Uri.parse("http://localhost:28253/api/v1/gracefully_terminate"));
+        }
+
         if (vmProcess != null) {
           await killWindowsChildProcesses(vmProcess!.pid);
           vmProcess!.kill();
           vmProcess = null;
+          startTime = null;
         }
         currentState = RunningState.notRunning;
         sendPort.send(ResponseStatus.sucesss);
