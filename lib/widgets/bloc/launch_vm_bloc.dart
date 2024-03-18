@@ -178,7 +178,7 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
     on<VMRunningEvent>((event, emit) {
       emit(CurrentVMState(
           running: RunningState.running,
-          vmCpuUsed: lastStatus!.vmCpuUsed,
+          vmCpuUsed: lastStatus!.vmCpuUsed * 100,
           vmRamUsed: lastStatus!.vmRamUsed));
     });
 
