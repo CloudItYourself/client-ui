@@ -4,6 +4,7 @@ import 'dart:isolate';
 import 'package:ciy_client/globals/vm_characteristics.dart';
 import 'package:ciy_client/utilities/installer.dart';
 import 'package:ciy_client/utilities/process_utils.dart';
+import 'package:flutter_desktop_sleep/flutter_desktop_sleep.dart';
 import 'package:path/path.dart' as path;
 import 'package:auto_exit_process/auto_exit_process.dart' as aep;
 
@@ -159,20 +160,34 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
   Future<Isolate>? runningVMIsolate;
   late ReceivePort readCommunicationPort;
   SendPort? writeCommunicationPort;
-
+  late FlutterDesktopSleep flutterDesktopSleepHandler; 
   PeriodicVMStatus? lastStatus;
   ResponseStatus? latestResponse;
+  late bool preventFromRestarting;
 
   VMRunBloc()
       : super(CurrentVMState(
             running: RunningState.notRunning, vmCpuUsed: 0.0, vmRamUsed: 0.0)) {
     readCommunicationPort = ReceivePort();
+    preventFromRestarting = false;
     readCommunicationPort.listen(handleMessages);
     runningVMIsolate = Isolate.spawn(CurrentVMState.runVMIsolate,
         [RootIsolateToken.instance!, readCommunicationPort.sendPort]);
+        
+    flutterDesktopSleepHandler = FlutterDesktopSleep();
+    flutterDesktopSleepHandler.setWindowSleepHandler((String? s) async {
+      if (s != null) {
+        if (s == 'sleep' || s == 'terminate_app') {
+          preventFromRestarting = true;
+          killVM();
+        }
+      }
+    });
 
     on<VMStartEvent>((event, emit) async {
-      runVM();
+      if (!preventFromRestarting) {
+        runVM();
+      }
     });
 
     on<VMRunningEvent>((event, emit) {

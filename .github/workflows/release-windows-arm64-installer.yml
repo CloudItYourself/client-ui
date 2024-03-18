@@ -1,6 +1,9 @@
 name: Build executable for windows amd64
 run-name: ${{ github.actor }}
-on: [ push ]
+on:
+  push:
+    branches:
+      - main
 jobs:
   build-and-upload-package:
     timeout-minutes: 60

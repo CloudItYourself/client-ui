@@ -5,6 +5,7 @@
 import FlutterMacOS
 import Foundation
 
+import flutter_desktop_sleep
 import flutter_secure_storage_macos
 import package_info_plus
 import path_provider_foundation
@@ -16,6 +17,7 @@ import window_manager
 import window_to_front
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
+  FlutterDesktopSleepPlugin.register(with: registry.registrar(forPlugin: "FlutterDesktopSleepPlugin"))
   FlutterSecureStoragePlugin.register(with: registry.registrar(forPlugin: "FlutterSecureStoragePlugin"))
   FPPPackageInfoPlusPlugin.register(with: registry.registrar(forPlugin: "FPPPackageInfoPlusPlugin"))
   PathProviderPlugin.register(with: registry.registrar(forPlugin: "PathProviderPlugin"))

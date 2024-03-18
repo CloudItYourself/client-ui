@@ -6,6 +6,7 @@
 
 #include "generated_plugin_registrant.h"
 
+#include <flutter_desktop_sleep/flutter_desktop_sleep_plugin_c_api.h>
 #include <flutter_secure_storage_windows/flutter_secure_storage_windows_plugin.h>
 #include <screen_retriever/screen_retriever_plugin.h>
 #include <system_tray/system_tray_plugin.h>
@@ -15,6 +16,8 @@
 #include <windows_single_instance/windows_single_instance_plugin.h>
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
+  FlutterDesktopSleepPluginCApiRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("FlutterDesktopSleepPluginCApi"));
   FlutterSecureStorageWindowsPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("FlutterSecureStorageWindowsPlugin"));
   ScreenRetrieverPluginRegisterWithRegistrar(
