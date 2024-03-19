@@ -159,19 +159,21 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
   Future<Isolate>? runningVMIsolate;
   late ReceivePort readCommunicationPort;
   SendPort? writeCommunicationPort;
-
+  bool? wasTerminatedManually;
   PeriodicVMStatus? lastStatus;
   ResponseStatus? latestResponse;
 
   VMRunBloc()
       : super(CurrentVMState(
             running: RunningState.notRunning, vmCpuUsed: 0.0, vmRamUsed: 0.0)) {
+    wasTerminatedManually = false;
     readCommunicationPort = ReceivePort();
     readCommunicationPort.listen(handleMessages);
     runningVMIsolate = Isolate.spawn(CurrentVMState.runVMIsolate,
         [RootIsolateToken.instance!, readCommunicationPort.sendPort]);
 
     on<VMStartEvent>((event, emit) async {
+      wasTerminatedManually = false;
       runVM();
     });
 
@@ -183,6 +185,7 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
     });
 
     on<VMTerminateRequest>((event, emit) {
+      wasTerminatedManually = true;
       killVM();
     });
 
@@ -271,13 +274,15 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
     } else if (message is ResponseStatus) {
       latestResponse = message;
     } else if (message is String) {
-      lastStatus = PeriodicVMStatus.fromJson(jsonDecode(message));
-      if (lastStatus!.vmConnected == false &&
-          state.running == RunningState.running) {
-        add(VMTerminateRequest());
-      }
-      if (lastStatus!.vmConnected && state.running != RunningState.notRunning) {
-        add(VMRunningEvent());
+      if (!wasTerminatedManually!)  {
+        lastStatus = PeriodicVMStatus.fromJson(jsonDecode(message));
+        if (lastStatus!.vmConnected == false &&
+            state.running == RunningState.running) {
+          add(VMTerminateRequest());
+        }
+        if (lastStatus!.vmConnected && state.running != RunningState.notRunning) {
+          add(VMRunningEvent());
+        }
       }
     }
   }

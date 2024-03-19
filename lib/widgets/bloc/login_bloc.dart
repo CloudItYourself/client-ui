@@ -32,7 +32,7 @@ class LoginBloc extends Bloc<LoginEventType, LoginState> {
     desktopAuthCodeFlow.localPort = 9298;
     desktopAuthCodeFlow.pkce = true;
     desktopAuthCodeFlow.redirectUri = 'http://localhost:9298/code';
-    desktopAuthCodeFlow.scopes = ['openid'];
+    desktopAuthCodeFlow.scopes = ['offline_access'];
     desktopAuthCodeFlow.tokenUrl =
         'https://dev-k1hhibazdyt8o3em.us.auth0.com/oauth/token';
 
@@ -69,6 +69,7 @@ class LoginBloc extends Bloc<LoginEventType, LoginState> {
 
           await _storage.write(key: "loggedIn", value: "true");
           await _storage.write(key: "token", value: token['access_token']);
+          await _storage.write(key: "refresh_token", value: token['refresh_token']); // todo: we must refresh the token when it expires
           await _storage.write(
               key: "tokenExpiration", value: tokenExpiration.toString());
 
