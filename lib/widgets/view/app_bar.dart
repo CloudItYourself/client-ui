@@ -1,4 +1,3 @@
-import 'package:ciy_client/globals/vm_characteristics.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -62,7 +61,7 @@ class _CiyWindowCaptionState extends State<CiyWindowCaption> with WindowListener
         children: [
           Expanded(
             child: DragToMoveArea(
-              child: Container(
+              child: SizedBox(
                 height: double.infinity,
                 child: Row(
                   children: [

@@ -20,10 +20,12 @@ class DesktopOAuth2 {
     }
   }
 
-  Future<Map<String, String>?> _listenAuthorizationCode(DesktopAuthorizationCodeFlow desktopAuthCodeFlow) async {
+  Future<Map<String, String>?> _listenAuthorizationCode(
+      DesktopAuthorizationCodeFlow desktopAuthCodeFlow) async {
     var request = await _codeListenerServer!.first;
     var params = request.uri.queryParameters;
-    if (!request.uri.toString().startsWith(desktopAuthCodeFlow.redirectUri) && !params.containsKey("code")) {
+    if (!request.uri.toString().startsWith(desktopAuthCodeFlow.redirectUri) &&
+        !params.containsKey("code")) {
       return null;
     }
 
@@ -42,20 +44,51 @@ class DesktopOAuth2 {
     return params;
   }
 
-  Future<Map<String, dynamic>?> _login(DesktopAuthorizationCodeFlow desktopAuthCodeFlow, Uri authorizationUrl, {String? codeVerifier}) async {
+  Future<Map<String, dynamic>?> _login(
+      DesktopAuthorizationCodeFlow desktopAuthCodeFlow, Uri authorizationUrl,
+      {String? codeVerifier}) async {
     await _codeListenerServer?.close();
-    _codeListenerServer = await HttpServer.bind('localhost', desktopAuthCodeFlow.localPort);
+    _codeListenerServer =
+        await HttpServer.bind('localhost', desktopAuthCodeFlow.localPort);
 
     await _authorize(authorizationUrl);
-    Map<String, String>? responseQueryParameters = await _listenAuthorizationCode(desktopAuthCodeFlow);
+    Map<String, String>? responseQueryParameters =
+        await _listenAuthorizationCode(desktopAuthCodeFlow);
 
-    if (responseQueryParameters != null && responseQueryParameters.containsKey("code")) {
-      return _fetchAccessToken(desktopAuthCodeFlow, responseQueryParameters["code"]!, codeVerifier: codeVerifier);
+    if (responseQueryParameters != null &&
+        responseQueryParameters.containsKey("code")) {
+      return _fetchAccessToken(
+          desktopAuthCodeFlow, responseQueryParameters["code"]!,
+          codeVerifier: codeVerifier);
     }
     return null;
   }
 
-  Future<Map<String, dynamic>?> _fetchAccessToken(DesktopAuthorizationCodeFlow desktopAuthCodeFlow, String code, {String? codeVerifier}) async {
+  Future<Map<String, dynamic>?> reAuthorize(
+      {required String reAuthUrl,
+      required String clientId,
+      required String refreshToken,
+      required String clientSecret}) async {
+    Map<String, String> tokenReqPayload = {
+      'client_id': clientId,
+      'client_secret': clientSecret,
+      'refresh_token': refreshToken,
+      'grant_type': 'refresh_token'
+    };
+
+    final headers = {
+      'content-type': 'application/x-www-form-urlencoded',
+    };
+
+    final response = await http.post(Uri.parse(reAuthUrl),
+        body: tokenReqPayload, headers: headers);
+
+    return Map<String, dynamic>.from(json.decode(response.body));
+  }
+
+  Future<Map<String, dynamic>?> _fetchAccessToken(
+      DesktopAuthorizationCodeFlow desktopAuthCodeFlow, String code,
+      {String? codeVerifier}) async {
     Map<String, String> tokenReqPayload = {
       'client_id': desktopAuthCodeFlow.clientId,
       'redirect_uri': desktopAuthCodeFlow.redirectUri,
@@ -63,14 +96,17 @@ class DesktopOAuth2 {
       'code': code
     };
 
-    if (codeVerifier != null) tokenReqPayload.putIfAbsent("code_verifier", () => codeVerifier);
+    if (codeVerifier != null)
+      tokenReqPayload.putIfAbsent("code_verifier", () => codeVerifier);
 
-    final response = await http.post(Uri.parse(desktopAuthCodeFlow.tokenUrl), body: tokenReqPayload);
+    final response = await http.post(Uri.parse(desktopAuthCodeFlow.tokenUrl),
+        body: tokenReqPayload);
 
     return Map<String, dynamic>.from(json.decode(response.body));
   }
 
-  Future<Map<String, dynamic>?> oauthorizeCode(DesktopAuthorizationCodeFlow desktopAuthCodeFlow) async {
+  Future<Map<String, dynamic>?> oauthorizeCode(
+      DesktopAuthorizationCodeFlow desktopAuthCodeFlow) async {
     final params = StringBuffer();
     params.write("response_type=code");
     params.write("&scope=${desktopAuthCodeFlow.scopes.join(',')}");
@@ -83,12 +119,15 @@ class DesktopOAuth2 {
 
       params.write("&code_challenge=${pkcePair.codeChallenge}");
       params.write("&code_challenge_method=S256");
-      final Uri authUrl = Uri.parse('${desktopAuthCodeFlow.authorizationUrl}?${params.toString()}');
+      final Uri authUrl = Uri.parse(
+          '${desktopAuthCodeFlow.authorizationUrl}?${params.toString()}');
 
-      return _login(desktopAuthCodeFlow, authUrl, codeVerifier: pkcePair.codeVerifier);
+      return _login(desktopAuthCodeFlow, authUrl,
+          codeVerifier: pkcePair.codeVerifier);
     } else {
       params.write("&client_secret=${desktopAuthCodeFlow.clientSecret}");
-      final Uri authUrl = Uri.parse('${desktopAuthCodeFlow.authorizationUrl}?${params.toString()}');
+      final Uri authUrl = Uri.parse(
+          '${desktopAuthCodeFlow.authorizationUrl}?${params.toString()}');
 
       return _login(desktopAuthCodeFlow, authUrl);
     }
