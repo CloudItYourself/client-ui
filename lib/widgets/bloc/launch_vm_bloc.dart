@@ -40,12 +40,10 @@ class PeriodicVMStatus {
 }
 
 class VMIsolate {
-  final Duration startupTimeoutInMinutes = Duration(minutes: 10);
   RunningState currentState = RunningState.notRunning;
   SendPort sendPort;
   ReceivePort recvPort;
   Process? vmProcess;
-  DateTime? startTime;
   final mutex = Mutex();
   late final String backendExecutorPath;
 
@@ -72,12 +70,11 @@ class VMIsolate {
             sendPort.send(jsonEncode(
                 PeriodicVMStatus(true, vmCpuUsed, vmMemoryUsed).toJson()));
           } else {
-            if (currentState == RunningState.running ||  (startTime != null && DateTime.now().difference(startTime!) > startupTimeoutInMinutes)) {
+            if (currentState == RunningState.running) {
               await killWindowsChildProcesses(vmProcess!.pid);
               vmProcess!.kill();
               vmProcess = null;
-              startTime = null;
-              currentState = RunningState.notRunning;
+              sendPort.send(jsonEncode(PeriodicVMStatus(false, 0.0, 0.0).toJson()));
             }
             sendPort
                 .send(jsonEncode(PeriodicVMStatus(false, 0.0, 0.0).toJson()));
@@ -103,7 +100,6 @@ class VMIsolate {
               mode: ProcessStartMode.normal, 
               isAutoExit: true);
           sendPort.send(ResponseStatus.sucesss);
-          startTime = DateTime.now();
           currentState = RunningState.inProgress;
         }
       }
@@ -120,7 +116,6 @@ class VMIsolate {
           await killWindowsChildProcesses(vmProcess!.pid);
           vmProcess!.kill();
           vmProcess = null;
-          startTime = null;
         }
         currentState = RunningState.notRunning;
         sendPort.send(ResponseStatus.sucesss);
@@ -156,12 +151,15 @@ final class CurrentVMState extends Equatable {
 }
 
 class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
+  final Duration startupTimeoutInMinutes = Duration(minutes: 10);
+
   Future<Isolate>? runningVMIsolate;
   late ReceivePort readCommunicationPort;
   SendPort? writeCommunicationPort;
   bool? wasTerminatedManually;
   PeriodicVMStatus? lastStatus;
   ResponseStatus? latestResponse;
+  DateTime? vmStartTime;
 
   VMRunBloc()
       : super(CurrentVMState(
@@ -240,6 +238,7 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
       if (latestResponse == ResponseStatus.sucesss) {
         emit(CurrentVMState(
             running: RunningState.inProgress, vmCpuUsed: 0.0, vmRamUsed: 0.0));
+        vmStartTime = DateTime.now();
       } else {
         // TODO: log me
       }
@@ -277,7 +276,7 @@ class VMRunBloc extends Bloc<VMRuntimeEvent, CurrentVMState> {
       if (!wasTerminatedManually!)  {
         lastStatus = PeriodicVMStatus.fromJson(jsonDecode(message));
         if (lastStatus!.vmConnected == false &&
-            state.running == RunningState.running) {
+            state.running == RunningState.running || (state.running==RunningState.inProgress && vmStartTime != null && DateTime.now().difference(vmStartTime!) > startupTimeoutInMinutes)) {
           add(VMTerminateRequest());
         }
         if (lastStatus!.vmConnected && state.running != RunningState.notRunning) {
