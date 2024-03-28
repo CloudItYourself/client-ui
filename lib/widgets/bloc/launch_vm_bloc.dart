@@ -109,7 +109,11 @@ class VMIsolate {
 
         if (currentState == RunningState.running) {
           // ignore: unused_local_variable
-          final postResult = await http.post(Uri.parse("http://localhost:28253/api/v1/gracefully_terminate"));
+          try {
+            final postResult = await http.post(Uri.parse("http://localhost:28253/api/v1/gracefully_terminate"));
+          } on Exception {
+            // pass for now
+          }
         }
 
         if (vmProcess != null) {
